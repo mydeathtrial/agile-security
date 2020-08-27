@@ -1,0 +1,100 @@
+package cloud.agileframework.security.filter.login;
+
+import cloud.agileframework.security.config.SecurityAutoConfiguration;
+import cloud.agileframework.security.properties.SecurityProperties;
+import cloud.agileframework.security.provider.LoginValidateProvider;
+import cloud.agileframework.security.provider.PasswordProvider;
+import cloud.agileframework.spring.util.ParamUtil;
+import cloud.agileframework.spring.util.RequestWrapper;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.authentication.ForwardAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.ForwardAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+/**
+ * @author 佟盟 on 2017/1/13
+ */
+public class LoginFilter extends AbstractAuthenticationProcessingFilter implements InitializingBean {
+
+    private final JwtAuthenticationProvider loginStrategyProvider = new JwtAuthenticationProvider();
+
+    @Autowired
+    private CustomerUserDetailsService userDetailsService;
+
+    @Autowired
+    private SecurityProperties securityProperties;
+
+    @Autowired
+    private PasswordProvider passwordProvider;
+
+    @Autowired
+    private ObjectProvider<LoginValidateProvider> loginValidateProviders;
+
+    @Autowired
+    private RememberMeServices rememberMeServices;
+
+    public LoginFilter(String loginUrl) {
+        super(new AntPathRequestMatcher(loginUrl));
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        setAllowSessionCreation(false);
+
+        this.setAuthenticationSuccessHandler(new ForwardAuthenticationSuccessHandler(SecurityAutoConfiguration.getSuccessUrl()));
+        this.setAuthenticationFailureHandler(new ForwardAuthenticationFailureHandler(SecurityAutoConfiguration.getErrorUrl()));
+
+        ProviderManager providerManager = new ProviderManager(Collections.singletonList(loginStrategyProvider));
+        providerManager.setEraseCredentialsAfterAuthentication(false);
+        this.setAuthenticationManager(providerManager);
+
+        loginStrategyProvider.setUserDetailsService(userDetailsService);
+        setRememberMeServices(rememberMeServices);
+    }
+
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws ServletException, AuthenticationException, IOException {
+        request = RequestWrapper.of(request);
+        // 获取用户名密码
+        Map<String, Object> params = ((RequestWrapper) request).getInParam();
+        String sourceUsername = ParamUtil.getInParam(params, securityProperties.getLoginUsername(), String.class);
+        String sourcePassword = ParamUtil.getInParam(params, securityProperties.getLoginPassword(), String.class);
+
+        // 密码解密
+        sourcePassword = passwordProvider.decrypt(sourcePassword);
+
+        // 额外验证
+        List<LoginValidateProvider> providers = loginValidateProviders.orderedStream().collect(Collectors.toList());
+        for (LoginValidateProvider provider : providers) {
+            provider.validate(request, response, sourceUsername, sourcePassword);
+        }
+
+        // 生成认证信息
+        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(sourceUsername, sourcePassword);
+        this.setDetails(request, authRequest);
+        return this.getAuthenticationManager().authenticate(authRequest);
+    }
+
+
+    private void setDetails(HttpServletRequest request, UsernamePasswordAuthenticationToken authRequest) {
+        authRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
+    }
+
+}
