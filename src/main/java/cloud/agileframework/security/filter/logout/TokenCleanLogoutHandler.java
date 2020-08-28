@@ -5,7 +5,7 @@ import cloud.agileframework.security.filter.login.CustomerUserDetailsService;
 import cloud.agileframework.security.filter.token.CurrentLoginInfo;
 import cloud.agileframework.security.filter.token.LoginCacheInfo;
 import cloud.agileframework.security.properties.SecurityProperties;
-import cloud.agileframework.security.provider.LoginOutProcessorProvider;
+import cloud.agileframework.security.provider.LogoutProcessorProvider;
 import cloud.agileframework.spring.util.ParamUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class TokenCleanLogoutHandler implements LogoutHandler {
     @Autowired
     private CustomerUserDetailsService securityUserDetailsService;
     @Autowired
-    private ObjectProvider<LoginOutProcessorProvider> observers;
+    private ObjectProvider<LogoutProcessorProvider> observers;
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {

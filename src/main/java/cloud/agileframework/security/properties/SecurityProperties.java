@@ -2,15 +2,14 @@ package cloud.agileframework.security.properties;
 
 import cloud.agileframework.cache.support.AgileCache;
 import cloud.agileframework.cache.util.CacheUtil;
-import cloud.agileframework.common.constant.Constant;
-import lombok.Data;
+import com.google.common.collect.Sets;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.io.Serializable;
 import java.time.Duration;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -19,9 +18,7 @@ import java.util.Set;
 @ConfigurationProperties(prefix = "agile.security")
 @Setter
 @Getter
-public class SecurityProperties implements Serializable {
-    private final String errorSignLockTimeCacheKey = "ErrorSignLockTime";
-    private final String maxErrorCountCacheKey = "MaxErrorCount";
+public class SecurityProperties implements Serializable, InitializingBean {
     /**
      * 开关
      */
@@ -57,7 +54,7 @@ public class SecurityProperties implements Serializable {
     /**
      * token传输模式
      */
-    private TransmissionMode[] tokenTransmissionMode = new TransmissionMode[]{TransmissionMode.HEADER};
+    private TransmissionMode[] tokenTransmissionMode = new TransmissionMode[]{TransmissionMode.COOKIE};
     /**
      * 登录账号表单名
      */
@@ -76,159 +73,45 @@ public class SecurityProperties implements Serializable {
     private String realIpHeader = "X-Real-Ip";
 
     /**
-     * token传输模式
-     */
-    public enum TransmissionMode {
-        /**
-         * cookie
-         */
-        COOKIE,
-        /**
-         * head传输
-         */
-        HEADER
-    }
-
-    /**
-     * Token级别
-     */
-    public enum TokenType {
-        /**
-         * 容易
-         */
-        EASY,
-        /**
-         * 难
-         */
-        DIFFICULT
-    }
-
-    /**
      * 密码
      */
-    private Password password = new Password();
+    private PasswordProperties password = new PasswordProperties();
 
     /**
      * 登陆
      */
-    private ErrorSign errorSign = new ErrorSign();
+    private ErrorSignProperties errorSign = new ErrorSignProperties();
+
+    private String failForwardUrl = "/fail";
 
     /**
-     * 密码
+     * 失败重定向地址
      */
-    @Data
-    public static class Password implements Serializable {
-        /**
-         * 密码最低强度
-         */
-        private float strength = Constant.NumberAbout.FIVE;
-        /**
-         * 密码有效期
-         */
-        private Duration duration = Duration.ofDays(Constant.NumberAbout.THIRTY_ONE);
-        /**
-         * 密钥
-         */
-        private String aesKey = "idssinsightkey01";
-
-        /**
-         * 偏移量
-         */
-        private String aesOffset = "3612213421341234";
-
-        /**
-         * 算法模式
-         */
-        private String algorithmModel = "AES/CBC/PKCS5Padding";
-
-        /**
-         * 强度解析器配置
-         */
-        private Strength strengthConf = new Strength();
-
-    }
+    private String successForwardUrl = "/success";
 
     /**
-     * 锁定类型
+     * 登录成功重定向地址
      */
-    public enum LockType {
-        // ip
-        IP,
-        // sessionId
-        SESSION_ID,
-        // 帐号
-        ACCOUNT
-    }
+    private String successLogoutForwardUrl = "/logout-success";
 
     /**
-     * 强度权重配置
+     * 退出成功重定向地址
      */
-    @Data
-    public static class Strength implements Serializable {
-        /**
-         * 最大允许密码长度
-         */
-        private int maxLength;
-        /**
-         * 正则权重
-         */
-        private double weightOfRegex;
-        /**
-         * 关键字权重
-         */
-        private double weightOfKeyWord;
-        /**
-         * 正则配置
-         */
-        private List<WeightMap> weightOfRegexMap;
-        /**
-         * 关键字配置
-         */
-        private List<String> weightOfKeyWords;
-    }
-
-    /**
-     * 正则权重映射
-     */
-    @Data
-    public static class WeightMap implements Serializable {
-        private String regex;
-        private double weight;
-    }
-
-    /**
-     * 登陆
-     */
-    @Data
-    public static class ErrorSign implements Serializable {
-        public AgileCache getCache() {
-            return CacheUtil.getCache("ErrorSign");
-        }
-
-        private boolean enable = true;
-        /**
-         * 最大登录失败次数
-         */
-        private int maxErrorCount = Constant.NumberAbout.FIVE;
-        /**
-         * 登录失败锁定时间
-         */
-        private Duration errorSignLockTime = Duration.ofMinutes(Constant.NumberAbout.TWO);
-        /**
-         * 登录失败计算超时
-         */
-        private Duration errorSignCountTimeout = Duration.ofMinutes(Constant.NumberAbout.TWO);
-        /**
-         * 过期是否锁定
-         */
-        private boolean lockForExpiration = true;
-        /**
-         * 锁定类型
-         */
-        private LockType[] lockType = new LockType[]{LockType.SESSION_ID};
-    }
-
     public AgileCache getCache() {
         return CacheUtil.getCache(getTokenHeader());
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        if (excludeUrl == null) {
+            excludeUrl = Sets.newHashSet();
+        }
+        excludeUrl.add(loginUrl);
+        excludeUrl.add("/static/**");
+        excludeUrl.add("/favicon.ico");
+        excludeUrl.add("/actuator/**");
+        excludeUrl.add("/actuator/*");
+        excludeUrl.add("actuator");
+        excludeUrl.add("/jolokia");
     }
 }

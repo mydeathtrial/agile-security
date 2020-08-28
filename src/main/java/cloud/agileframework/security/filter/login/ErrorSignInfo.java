@@ -1,6 +1,6 @@
 package cloud.agileframework.security.filter.login;
 
-import cloud.agileframework.security.properties.SecurityProperties;
+import cloud.agileframework.security.properties.LockType;
 import cloud.agileframework.spring.util.ServletUtil;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,20 +42,20 @@ public class ErrorSignInfo {
      * @param sourceUsername 账户
      * @return 锁定依据
      */
-    public static ErrorSignInfo of(HttpServletRequest request, String sourceUsername, SecurityProperties.LockType[] lockTypes) {
+    public static ErrorSignInfo of(HttpServletRequest request, String sourceUsername, LockType[] lockTypes) {
         ErrorSignInfo.ErrorSignInfoBuilder builder = ErrorSignInfo.builder();
 
         StringBuilder lockObject = new StringBuilder();
 
-        if (ArrayUtils.contains(lockTypes, SecurityProperties.LockType.IP)) {
+        if (ArrayUtils.contains(lockTypes, LockType.IP)) {
             lockObject.append(ServletUtil.getCurrentRequestIP());
             builder.ip(ServletUtil.getRequestIP(request));
         }
-        if (ArrayUtils.contains(lockTypes, SecurityProperties.LockType.SESSION_ID)) {
+        if (ArrayUtils.contains(lockTypes, LockType.SESSION_ID)) {
             lockObject.append(request.getSession().getId());
             builder.sessionId(request.getSession().getId());
         }
-        if (ArrayUtils.contains(lockTypes, SecurityProperties.LockType.ACCOUNT)) {
+        if (ArrayUtils.contains(lockTypes, LockType.ACCOUNT)) {
             lockObject.append(sourceUsername);
             builder.account(sourceUsername);
         }

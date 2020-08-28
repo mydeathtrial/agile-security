@@ -4,8 +4,6 @@ import cloud.agileframework.cache.support.AgileCache;
 import cloud.agileframework.security.exception.LoginErrorLockException;
 import cloud.agileframework.security.filter.login.ErrorSignInfo;
 import cloud.agileframework.security.properties.SecurityProperties;
-import cloud.agileframework.spring.util.ParamUtil;
-import cloud.agileframework.spring.util.RequestWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.AuthenticationException;
 
@@ -13,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.Duration;
 import java.util.Date;
-import java.util.Map;
 
 /**
  * @author 佟盟
@@ -27,7 +24,7 @@ public class ErrorSignLockLoginValidateProvider implements LoginValidateProvider
     private SecurityProperties securityProperties;
 
     @Override
-    public void validate(HttpServletRequest request, HttpServletResponse response,String username,String password) throws AuthenticationException {
+    public void validate(HttpServletRequest request, HttpServletResponse response, String username, String password) throws AuthenticationException {
 
         // 生成失败锁定标志
         ErrorSignInfo errorSignInfo = ErrorSignInfo.of(request, username, securityProperties.getErrorSign().getLockType());
@@ -57,7 +54,7 @@ public class ErrorSignLockLoginValidateProvider implements LoginValidateProvider
             errorSignInfo.setLockTime(new Date());
 
             //锁定过期时间
-            Duration timeout = securityProperties.getErrorSign().getErrorSignLockTime();
+            Duration timeout = securityProperties.getErrorSign().getLockTime();
             boolean alwaysLock = timeout.toMillis() <= 0;
             if (alwaysLock) {
                 cache.put(errorSignInfo.getLockObject(), ++errorCount);
@@ -66,7 +63,7 @@ public class ErrorSignLockLoginValidateProvider implements LoginValidateProvider
                 errorSignInfo.setTimeOut(new Date(errorSignInfo.getLockTime().getTime() + timeout.toMillis()));
             }
 
-            throw new LoginErrorLockException(alwaysLock ? "请联系管理员解锁" : securityProperties.getErrorSign().getErrorSignLockTime().toMinutes() + "分钟");
+            throw new LoginErrorLockException(alwaysLock ? "请联系管理员解锁" : securityProperties.getErrorSign().getLockTime().toMinutes() + "分钟");
         }
 
     }

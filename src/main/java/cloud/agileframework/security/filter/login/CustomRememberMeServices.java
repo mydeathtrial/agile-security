@@ -3,7 +3,6 @@ package cloud.agileframework.security.filter.login;
 import cloud.agileframework.cache.support.AgileCache;
 import cloud.agileframework.cache.util.CacheUtil;
 import cloud.agileframework.common.util.date.DateUtil;
-import cloud.agileframework.security.config.SecurityAutoConfiguration;
 import cloud.agileframework.security.filter.token.LoginCacheInfo;
 import cloud.agileframework.security.properties.SecurityProperties;
 import cloud.agileframework.security.util.TokenUtil;
@@ -79,7 +78,6 @@ public class CustomRememberMeServices implements RememberMeServices, Initializin
         TokenUtil.notice(request, response, token);
 
         ((UsernamePasswordAuthenticationToken) successfulAuthentication).setDetails(token);
-        request.setAttribute(SecurityAutoConfiguration.ACCESS_SUCCESS, successfulAuthentication);
     }
 
 
@@ -99,7 +97,7 @@ public class CustomRememberMeServices implements RememberMeServices, Initializin
         ErrorSignInfo errorSignInfo = (ErrorSignInfo) request.getAttribute(ErrorSignInfo.REQUEST_ATTR);
 
         //计数过期时间
-        Duration countTimeout = securityProperties.getErrorSign().getErrorSignCountTimeout();
+        Duration countTimeout = securityProperties.getErrorSign().getCountTimeout();
 
         //已失败次数
         Integer errorCount = errorSignCache.get(errorSignInfo.getLockObject(), Integer.class);

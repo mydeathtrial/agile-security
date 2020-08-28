@@ -45,7 +45,7 @@ public class LoginStrategyLoginValidateProvider implements LoginValidateProvider
 
         CustomerUserDetails userDetails = (CustomerUserDetails) loginCacheInfo.getAuthentication().getPrincipal();
 
-        if (loginCacheInfo.getSessionTokens().size() > 0) {
+        if (userDetails.getLoginStrategy() != null && !loginCacheInfo.getSessionTokens().isEmpty()) {
             switch (userDetails.getLoginStrategy()) {
                 case SINGLETON_REPLACE:
                     cache.evict(username);

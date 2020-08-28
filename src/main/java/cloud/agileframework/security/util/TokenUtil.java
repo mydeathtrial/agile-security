@@ -2,6 +2,7 @@ package cloud.agileframework.security.util;
 
 import cloud.agileframework.common.util.date.DateUtil;
 import cloud.agileframework.security.properties.SecurityProperties;
+import cloud.agileframework.security.properties.TransmissionMode;
 import cloud.agileframework.spring.util.spring.BeanUtil;
 import cloud.agileframework.spring.util.spring.IdUtil;
 import io.jsonwebtoken.Claims;
@@ -70,8 +71,8 @@ public class TokenUtil {
      */
     @SneakyThrows
     public static void notice(HttpServletRequest request, HttpServletResponse response, String token) {
-        SecurityProperties.TransmissionMode[] modes = securityProperties.getTokenTransmissionMode();
-        for (SecurityProperties.TransmissionMode mode : modes) {
+        TransmissionMode[] modes = securityProperties.getTokenTransmissionMode();
+        for (TransmissionMode mode : modes) {
             switch (mode) {
                 case COOKIE:
                     response.addCookie(new Cookie(securityProperties.getTokenHeader(), token));

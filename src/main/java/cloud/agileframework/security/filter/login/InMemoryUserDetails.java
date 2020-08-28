@@ -24,8 +24,8 @@ public class InMemoryUserDetails implements CustomerUserDetails {
     private boolean enabled;
 
     public static InMemoryUserDetails of(UserDetails userDetails) {
-        if(userDetails instanceof InMemoryUserDetails){
-            return (InMemoryUserDetails)userDetails;
+        if (userDetails instanceof InMemoryUserDetails) {
+            return (InMemoryUserDetails) userDetails;
         }
         InMemoryUserDetails inMemoryUserDetails = new InMemoryUserDetails();
         inMemoryUserDetails.authorities = userDetails.getAuthorities();

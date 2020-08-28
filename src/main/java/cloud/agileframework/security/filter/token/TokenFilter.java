@@ -1,11 +1,14 @@
 package cloud.agileframework.security.filter.token;
 
-import cloud.agileframework.security.config.SecurityAutoConfiguration;
 import cloud.agileframework.security.properties.SecurityProperties;
+import cloud.agileframework.security.properties.TokenType;
 import cloud.agileframework.security.util.TokenUtil;
 import cloud.agileframework.spring.util.ParamUtil;
 import cloud.agileframework.spring.util.ServletUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -17,7 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 登录验证码拦截器
@@ -26,15 +28,15 @@ import java.util.Set;
  */
 public class TokenFilter extends OncePerRequestFilter {
     private final AccessDeniedHandlerImpl failureHandler = new AccessDeniedHandlerImpl();
-    ;
-    private final List<RequestMatcher> matches;
+    private List<RequestMatcher> matches;
+    @Autowired
+    private SecurityProperties securityProperties;
 
-    private final SecurityProperties securityProperties;
-
-    public TokenFilter(Set<String> immuneUrl, SecurityProperties securityProperties) {
-        matches = ServletUtil.coverRequestMatcher(immuneUrl.toArray(new String[]{}));
-        failureHandler.setErrorPage(SecurityAutoConfiguration.getErrorUrl());
-        this.securityProperties = securityProperties;
+    @Override
+    public void afterPropertiesSet() throws ServletException {
+        super.afterPropertiesSet();
+        matches = ServletUtil.coverRequestMatcher(securityProperties.getExcludeUrl().toArray(new String[]{}));
+        failureHandler.setErrorPage(securityProperties.getFailForwardUrl());
     }
 
     @Override
@@ -45,7 +47,9 @@ public class TokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         try {
-            if (ServletUtil.matcherRequest(request, matches)) {
+            // 判断模拟账户
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication instanceof UsernamePasswordAuthenticationToken || ServletUtil.matcherRequest(request, matches)) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -65,7 +69,7 @@ public class TokenFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
             //判断策略，复杂令牌时刷新token
-            if (securityProperties.getTokenType() == SecurityProperties.TokenType.DIFFICULT) {
+            if (securityProperties.getTokenType() == TokenType.DIFFICULT) {
                 String newToken = LoginCacheInfo.refreshToken(currentLoginInfo);
                 TokenUtil.notice(request, response, newToken);
             }

@@ -1,6 +1,5 @@
 package cloud.agileframework.security.controller;
 
-import cloud.agileframework.security.config.SecurityAutoConfiguration;
 import cloud.agileframework.security.filter.logout.TokenCleanLogoutHandler;
 import cloud.agileframework.security.properties.SecurityProperties;
 import cloud.agileframework.security.provider.SecurityResultProvider;
@@ -10,6 +9,7 @@ import org.springframework.boot.autoconfigure.web.servlet.error.AbstractErrorCon
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorViewResolver;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +39,7 @@ public class ForwardController extends AbstractErrorController {
         super(errorAttributes, errorViewResolvers);
     }
 
-    @RequestMapping({"${agile.security.fail-forward-url}", "${server.error.path:${error.path:/error}}"})
+    @RequestMapping({"${agile.security.fail-forward-url:/fail}", "${server.error.path:${error.path:/error}}"})
     public Object error(HttpServletRequest request, HttpServletResponse response) throws Throwable {
         handleStatus(request, response);
         handleToken(request, response);
@@ -78,15 +78,15 @@ public class ForwardController extends AbstractErrorController {
     }
 
     @ResponseBody
-    @RequestMapping("${agile.security.success-forward-url}")
+    @RequestMapping("${agile.security.success-forward-url:/success}")
     public Object success(HttpServletRequest request, HttpServletResponse response) {
         return securityResultProvider.loginSuccess(request,
                 response,
-                (UsernamePasswordAuthenticationToken) request.getAttribute(SecurityAutoConfiguration.ACCESS_SUCCESS));
+                (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication());
     }
 
     @ResponseBody
-    @RequestMapping("${agile.security.success-logout-forward-url}")
+    @RequestMapping("${agile.security.success-logout-forward-url:/logout-success}")
     public Object logoutSuccess(HttpServletRequest request, HttpServletResponse response) {
         return securityResultProvider.logoutSuccess(request,
                 response,

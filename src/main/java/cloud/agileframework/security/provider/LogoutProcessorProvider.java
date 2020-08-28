@@ -7,7 +7,7 @@ package cloud.agileframework.security.provider;
  * @version 1.0
  * @since 1.0
  */
-public interface LoginOutProcessorProvider {
+public interface LogoutProcessorProvider {
     /**
      * 退出之后
      *

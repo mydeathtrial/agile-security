@@ -5,11 +5,14 @@ import cloud.agileframework.security.controller.ForwardController;
 import cloud.agileframework.security.filter.login.JwtAuthenticationProvider;
 import cloud.agileframework.security.filter.login.LoginFilter;
 import cloud.agileframework.security.filter.logout.TokenCleanLogoutHandler;
+import cloud.agileframework.security.filter.simulation.SimulationFilter;
 import cloud.agileframework.security.filter.token.TokenFilter;
+import cloud.agileframework.security.properties.ErrorSignProperties;
+import cloud.agileframework.security.properties.PasswordProperties;
 import cloud.agileframework.security.properties.SecurityProperties;
+import cloud.agileframework.security.properties.StrengthProperties;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -30,8 +33,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.logout.ForwardLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 
-import java.util.Collections;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -40,58 +41,32 @@ import java.util.stream.Collectors;
 @Configuration
 @AutoConfigureBefore(ErrorMvcAutoConfiguration.class)
 @ImportAutoConfiguration(SecurityAboutConfiguration.class)
-@EnableConfigurationProperties(value = {SecurityProperties.class})
+@EnableConfigurationProperties(value = {SecurityProperties.class, PasswordProperties.class, StrengthProperties.class, ErrorSignProperties.class})
 @EnableWebSecurity
-@ConditionalOnProperty(name = "enable", prefix = "agile.security", havingValue = "true")
+@ConditionalOnProperty(name = "enable", prefix = "agile.security")
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @ConditionalOnClass({AgileCacheManagerInterface.class, WebSecurityConfigurerAdapter.class, AuthenticationProvider.class})
 public class SecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
-    private final Set<String> immuneUrl;
+    @Autowired
+    private SecurityProperties securityProperties;
 
-    private final SecurityProperties securityProperties;
-
-    public static final String ACCESS_SUCCESS = "SPRING_SECURITY_ACCESS_SUCCESS";
-    private static String errorUrl;
-    private static String successUrl;
-    private static String logoutSuccessUrl;
-
-    public static String getErrorUrl() {
-        return errorUrl;
-    }
-
-    public static String getSuccessUrl() {
-        return successUrl;
-    }
-
-    public static String getLogoutSuccessUrl() {
-        return logoutSuccessUrl;
-    }
-
-    @Value("${agile.security.fail-forward-url}")
-    public void setErrorUrl(String errorUrl) {
-        SecurityAutoConfiguration.errorUrl = errorUrl;
-    }
-
-    @Value("${agile.security.success-forward-url}")
-    public void setSuccessUrl(String successUrl) {
-        SecurityAutoConfiguration.successUrl = successUrl;
-    }
-
-    @Value("${agile.security.success-logout-forward-url}")
-    public void setLogoutSuccessUrl(String logoutSuccessUrl) {
-        SecurityAutoConfiguration.logoutSuccessUrl = logoutSuccessUrl;
-    }
+    @Autowired(required = false)
+    private SimulationFilter simulationFilter;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .authorizeRequests().antMatchers(immuneUrl.toArray(new String[]{})).permitAll().anyRequest().authenticated()
-                .and().logout().logoutUrl(securityProperties.getLoginOutUrl()).deleteCookies(securityProperties.getTokenHeader()).addLogoutHandler(tokenCleanLogoutHandler()).logoutSuccessHandler(new ForwardLogoutSuccessHandler(getLogoutSuccessUrl()))
-                .and().exceptionHandling().accessDeniedPage(errorUrl)
+                .authorizeRequests().antMatchers(securityProperties.getExcludeUrl().toArray(new String[]{})).permitAll().anyRequest().authenticated()
+                .and().logout().logoutUrl(securityProperties.getLoginOutUrl()).deleteCookies(securityProperties.getTokenHeader()).addLogoutHandler(tokenCleanLogoutHandler()).logoutSuccessHandler(new ForwardLogoutSuccessHandler(securityProperties.getSuccessLogoutForwardUrl()))
+                .and().exceptionHandling().accessDeniedPage(securityProperties.getFailForwardUrl())
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).sessionFixation().none()
                 .and().csrf().disable().httpBasic().disable()
                 .addFilterAt(tokenFilter(), LogoutFilter.class);
+
+        if (simulationFilter != null) {
+            http.addFilterBefore(simulationFilter, TokenFilter.class);
+        }
     }
 
     @Bean
@@ -101,26 +76,12 @@ public class SecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean
     TokenFilter tokenFilter() {
-        return new TokenFilter(immuneUrl, securityProperties);
+        return new TokenFilter();
     }
 
     @Bean
     ForwardLogoutSuccessHandler logoutHandler() {
-        return new ForwardLogoutSuccessHandler(successUrl);
-    }
-
-    @Autowired
-    public SecurityAutoConfiguration(SecurityProperties securityProperties) {
-        this.immuneUrl = securityProperties.getExcludeUrl();
-        this.immuneUrl.add("/static/**");
-        this.immuneUrl.add("/favicon.ico");
-        this.immuneUrl.add("/actuator/**");
-        this.immuneUrl.add("/actuator/*");
-        this.immuneUrl.add("actuator");
-        this.immuneUrl.add("/jolokia");
-        this.immuneUrl.add(securityProperties.getLoginUrl());
-
-        this.securityProperties = securityProperties;
+        return new ForwardLogoutSuccessHandler(securityProperties.getSuccessForwardUrl());
     }
 
     @Bean
@@ -136,12 +97,12 @@ public class SecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    ProviderManager providerManager(AuthenticationProvider... authenticationProvider){
+    ProviderManager providerManager(AuthenticationProvider... authenticationProvider) {
         return new ProviderManager(authenticationProvider);
     }
 
     @Bean
-    JwtAuthenticationProvider jwtAuthenticationProvider(){
+    JwtAuthenticationProvider jwtAuthenticationProvider() {
         return new JwtAuthenticationProvider();
     }
 }

@@ -20,5 +20,5 @@ public interface LoginValidateProvider {
      * @param response 响应
      * @throws AuthenticationException 登陆失败异常
      */
-    void validate(HttpServletRequest request, HttpServletResponse response,String username,String password) throws AuthenticationException;
+    void validate(HttpServletRequest request, HttpServletResponse response, String username, String password) throws AuthenticationException;
 }

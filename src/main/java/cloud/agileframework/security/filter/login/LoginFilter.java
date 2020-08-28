@@ -1,6 +1,5 @@
 package cloud.agileframework.security.filter.login;
 
-import cloud.agileframework.security.config.SecurityAutoConfiguration;
 import cloud.agileframework.security.properties.SecurityProperties;
 import cloud.agileframework.security.provider.LoginValidateProvider;
 import cloud.agileframework.security.provider.PasswordProvider;
@@ -13,16 +12,15 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.ForwardAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.ForwardAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -58,8 +56,8 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter implemen
     public void afterPropertiesSet() {
         setAllowSessionCreation(false);
 
-        this.setAuthenticationSuccessHandler(new ForwardAuthenticationSuccessHandler(SecurityAutoConfiguration.getSuccessUrl()));
-        this.setAuthenticationFailureHandler(new ForwardAuthenticationFailureHandler(SecurityAutoConfiguration.getErrorUrl()));
+        this.setAuthenticationSuccessHandler(new ForwardAuthenticationSuccessHandler(securityProperties.getSuccessForwardUrl()));
+        this.setAuthenticationFailureHandler(new ForwardAuthenticationFailureHandler(securityProperties.getFailForwardUrl()));
 
         ProviderManager providerManager = new ProviderManager(Collections.singletonList(loginStrategyProvider));
         providerManager.setEraseCredentialsAfterAuthentication(false);
@@ -70,7 +68,13 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter implemen
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws ServletException, AuthenticationException, IOException {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+        // 判断模拟账户
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof UsernamePasswordAuthenticationToken) {
+            return authentication;
+        }
+
         request = RequestWrapper.of(request);
         // 获取用户名密码
         Map<String, Object> params = ((RequestWrapper) request).getInParam();

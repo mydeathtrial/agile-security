@@ -1,6 +1,5 @@
 package com.agile;
 
-import cloud.agileframework.security.filter.login.CustomerUserDetails;
 import cloud.agileframework.security.filter.login.CustomerUserDetailsService;
 import cloud.agileframework.security.filter.login.InMemoryUserDetails;
 import org.springframework.beans.factory.InitializingBean;
@@ -16,12 +15,15 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class Test implements InitializingBean {
-    @Autowired
+    @Autowired(required = false)
     CustomerUserDetailsService customerUserDetailsService;
 
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        if (customerUserDetailsService == null) {
+            return;
+        }
         InMemoryUserDetails user = new InMemoryUserDetails();
         user.setPassword("$2a$04$VABavUN0MV17fvBVYwUV9./TfINWBFrbS8aSnbD15n7kgZ7MwpEpW");
         user.setUsername("admin");

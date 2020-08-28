@@ -1,11 +1,9 @@
 package cloud.agileframework.security.provider;
 
 import cloud.agileframework.security.exception.NoCompleteFormSign;
-import cloud.agileframework.security.properties.SecurityProperties;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.AuthenticationException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,9 +18,6 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class CompleteFormLoginValidateProvider implements LoginValidateProvider {
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    @Autowired
-    private SecurityProperties securityProperties;
 
     @Override
     public void validate(HttpServletRequest request, HttpServletResponse response, String username, String password) throws AuthenticationException {

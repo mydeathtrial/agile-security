@@ -4,6 +4,8 @@ import cloud.agileframework.common.constant.Constant;
 import cloud.agileframework.common.util.pattern.PatternUtil;
 import cloud.agileframework.common.util.string.StringUtil;
 import cloud.agileframework.security.properties.SecurityProperties;
+import cloud.agileframework.security.properties.StrengthProperties;
+import cloud.agileframework.security.properties.WeightMap;
 import cloud.agileframework.spring.util.spring.BeanUtil;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -35,7 +37,7 @@ public class PasswordUtil {
 
     private static final BCryptPasswordEncoder B_CRYPT_PASSWORD_ENCODER = new BCryptPasswordEncoder(Constant.NumberAbout.FOUR);
 
-    private static final SecurityProperties.Strength STRENGTH_CONF = BeanUtil.getBean(SecurityProperties.class).getPassword().getStrengthConf();
+    private static final StrengthProperties STRENGTH_CONF = BeanUtil.getBean(SecurityProperties.class).getPassword().getStrengthConf();
     private static final int MIN_NUM = 48;
     private static final int MAN_NUM = 57;
     private static final int MIN_CAPITAL_LETTER = 65;
@@ -180,10 +182,10 @@ public class PasswordUtil {
     private static double parsingRegex(String password, double level) {
         assert STRENGTH_CONF != null;
         double weightOfRegex = STRENGTH_CONF.getWeightOfRegex();
-        List<SecurityProperties.WeightMap> weightMaps = STRENGTH_CONF.getWeightOfRegexMap();
-        double sum = weightMaps.stream().map(SecurityProperties.WeightMap::getWeight).mapToDouble(a -> a).sum();
+        List<WeightMap> weightMaps = STRENGTH_CONF.getWeightOfRegexMap();
+        double sum = weightMaps.stream().map(WeightMap::getWeight).mapToDouble(a -> a).sum();
 
-        for (SecurityProperties.WeightMap weightMap : weightMaps) {
+        for (WeightMap weightMap : weightMaps) {
             double weight = weightMap.getWeight();
             // 计算当前正则的权重分数，每个字符的有效分数 * 正则打分占比 * 当前正则占比
             double percentage = new BigDecimal(weight).divide(new BigDecimal(sum), Constant.NumberAbout.TEN, ROUND_HALF_DOWN).doubleValue() * (charLevel * weightOfRegex);
