@@ -6,7 +6,7 @@
 
     <groupId>com.agileframework</groupId>
     <artifactId>agile-security</artifactId>
-    <version>1.0</version>
+    <version>0.1</version>
     <description>print log for request</description>
     <url>https://github.com/mydeathtrial/agile-security</url>
 
