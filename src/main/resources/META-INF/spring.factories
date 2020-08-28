@@ -1,3 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 cloud.agileframework.security.config.SecurityAutoConfiguration,\
-cloud.agileframework.security.config.SimulationAutoConfiguration
+  cloud.agileframework.security.config.SimulationAutoConfiguration,\
+  cloud.agileframework.security.config.SecurityWebMvcAutoConfiguration
