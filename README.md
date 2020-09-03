@@ -75,17 +75,25 @@ token由JWT方式生成，并通过缓存组件agile-cache为其增加了令牌�
 您可以从[最新稳定版本]下载包(https://github.com/mydeathtrial/agile-security/releases).
 该包已上传至maven中央仓库，可在pom中直接声明引用
 
-以版本agile-security-1.0.jar为例。
+以版本agile-security-2.0.0.jar为例。
 #### 步骤 2: 添加maven依赖
 ```xml
+<!--声明中央仓库-->
+<repositories>
+    <repository>
+        <id>cent</id>
+        <url>https://repo1.maven.org/maven2/</url>
+    </repository>
+</repositories>
+<!--声明依赖-->
 <dependency>
     <groupId>cloud.agileframework</groupId>
     <artifactId>agile-security</artifactId>
-    <version>1.0</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 #### 步骤 3: 配置开关
-```
+```properties
 agile.security.enable=true
 ```
 #### 步骤 4: 登录/退出
