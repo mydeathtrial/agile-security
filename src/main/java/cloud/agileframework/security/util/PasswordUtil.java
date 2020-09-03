@@ -6,7 +6,7 @@ import cloud.agileframework.common.util.string.StringUtil;
 import cloud.agileframework.security.properties.SecurityProperties;
 import cloud.agileframework.security.properties.StrengthProperties;
 import cloud.agileframework.security.properties.WeightMap;
-import cloud.agileframework.spring.util.spring.BeanUtil;
+import cloud.agileframework.spring.util.BeanUtil;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.math.BigDecimal;

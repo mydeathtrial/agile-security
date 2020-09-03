@@ -23,7 +23,7 @@ public class SecurityWebMvcAutoConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    public UserDetailHandlerMethodArgumentResolver userDetailHandlerMethodArgumentResolver(){
+    public UserDetailHandlerMethodArgumentResolver userDetailHandlerMethodArgumentResolver() {
         return new UserDetailHandlerMethodArgumentResolver();
     }
 }
