@@ -24,8 +24,11 @@ import java.io.IOException;
  * @since 1.0
  */
 public class SimulationFilter extends OncePerRequestFilter {
-    @Autowired
-    private SimulationProperties simulationProperties;
+    private final SimulationProperties simulationProperties;
+
+    public SimulationFilter(SimulationProperties simulationProperties) {
+        this.simulationProperties = simulationProperties;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

@@ -4,6 +4,7 @@ import cloud.agileframework.security.properties.SecurityProperties;
 import cloud.agileframework.security.properties.TokenType;
 import cloud.agileframework.security.util.TokenUtil;
 import cloud.agileframework.spring.util.ParamUtil;
+import cloud.agileframework.spring.util.SecurityUtil;
 import cloud.agileframework.spring.util.ServletUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,6 +28,7 @@ import java.util.List;
  * @author 佟盟 on 2017/9/27
  */
 public class TokenFilter extends OncePerRequestFilter {
+
     private final AccessDeniedHandlerImpl failureHandler = new AccessDeniedHandlerImpl();
     private List<RequestMatcher> matches;
     @Autowired
@@ -63,7 +65,12 @@ public class TokenFilter extends OncePerRequestFilter {
             LoginCacheInfo.validateCacheDate(currentLoginInfo.getLoginCacheInfo());
 
             //账户信息赋给业务层
-            SecurityContextHolder.getContext().setAuthentication(currentLoginInfo.getLoginCacheInfo().getAuthentication());
+            final Authentication currentAuthentication = currentLoginInfo.getLoginCacheInfo().getAuthentication();
+
+            //请求信息中传递账户信息，用于后续过滤器使用
+            SecurityUtil.setCurrentUser(request,currentAuthentication);
+
+            SecurityContextHolder.getContext().setAuthentication(currentAuthentication);
 
             //执行业务层程序
             filterChain.doFilter(request, response);
@@ -73,6 +80,7 @@ public class TokenFilter extends OncePerRequestFilter {
                 String newToken = LoginCacheInfo.refreshToken(currentLoginInfo);
                 TokenUtil.notice(request, response, newToken);
             }
+
         } catch (Exception e) {
             failureHandler.handle(request, response, new AccessDeniedException("令牌验证失败", e));
         }
