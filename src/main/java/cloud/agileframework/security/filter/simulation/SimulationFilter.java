@@ -3,7 +3,7 @@ package cloud.agileframework.security.filter.simulation;
 import cloud.agileframework.common.util.clazz.TypeReference;
 import cloud.agileframework.common.util.object.ObjectUtil;
 import cloud.agileframework.security.properties.SimulationProperties;
-import org.springframework.beans.factory.annotation.Autowired;
+import cloud.agileframework.spring.util.SecurityUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,6 +40,7 @@ public class SimulationFilter extends OncePerRequestFilter {
                 throw new RuntimeException("模拟账户数据user无法转换成目标userClass类，请仔细核对");
             }
             authentication = new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+            SecurityUtil.setCurrentUser(request, authentication);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         filterChain.doFilter(request, response);
