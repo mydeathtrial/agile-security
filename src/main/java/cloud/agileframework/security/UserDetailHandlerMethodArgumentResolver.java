@@ -1,5 +1,6 @@
 package cloud.agileframework.security;
 
+import cloud.agileframework.spring.util.SecurityUtil;
 import org.springframework.core.MethodParameter;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
@@ -20,16 +21,12 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 public class UserDetailHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
     @Override
     public boolean supportsParameter(MethodParameter methodParameter) {
-        return methodParameter.getParameterType().isAssignableFrom(UserDetails.class);
+        return UserDetails.class.isAssignableFrom(methodParameter.getParameterType());
     }
 
     @Override
     @Nullable
     public Object resolveArgument(@Nullable MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-            return authentication.getPrincipal();
-        }
-        return null;
+        return SecurityUtil.currentUser();
     }
 }

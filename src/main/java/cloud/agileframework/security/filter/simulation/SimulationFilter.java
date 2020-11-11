@@ -40,9 +40,10 @@ public class SimulationFilter extends OncePerRequestFilter {
                 throw new RuntimeException("模拟账户数据user无法转换成目标userClass类，请仔细核对");
             }
             authentication = new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-            SecurityUtil.setCurrentUser(request, authentication);
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
+        SecurityUtil.setCurrentUser(request, authentication);
         filterChain.doFilter(request, response);
     }
 }
