@@ -5,6 +5,7 @@ import cloud.agileframework.security.provider.LoginValidateProvider;
 import cloud.agileframework.security.provider.PasswordProvider;
 import cloud.agileframework.spring.util.ParamUtil;
 import cloud.agileframework.spring.util.RequestWrapper;
+import cloud.agileframework.spring.util.ServletUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
 /**
  * @author 佟盟 on 2017/1/13
  */
-public class LoginFilter extends AbstractAuthenticationProcessingFilter implements InitializingBean {
+public class LoginFilter extends AbstractAuthenticationProcessingFilter implements InitializingBean,SingleSignOnProvider {
 
     private final JwtAuthenticationProvider loginStrategyProvider = new JwtAuthenticationProvider();
 
@@ -101,4 +102,14 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter implemen
         authRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
     }
 
+    @Override
+    public Authentication sign(String username) {
+        // 生成认证信息
+        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(username, null);
+        Authentication auth = this.getAuthenticationManager().authenticate(authRequest);
+        getRememberMeServices().loginSuccess(ServletUtil.getCurrentRequest(),
+                ServletUtil.getCurrentResponse(),
+                auth);
+        return auth;
+    }
 }

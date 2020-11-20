@@ -13,6 +13,10 @@ import org.springframework.security.core.userdetails.UserDetails;
  */
 public class JwtAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
     private CustomerUserDetailsService userDetailsService;
+    /**
+     * 虚拟账户
+     */
+    private static UserDetails simulation;
 
     public void setUserDetailsService(CustomerUserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
@@ -37,6 +41,9 @@ public class JwtAuthenticationProvider extends AbstractUserDetailsAuthentication
      */
     @Override
     protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
+        if(username!=null && simulation!=null && username.equals(simulation.getUsername())){
+            return simulation;
+        }
         return userDetailsService.loadUserByUsername(username);
     }
 
@@ -49,9 +56,7 @@ public class JwtAuthenticationProvider extends AbstractUserDetailsAuthentication
      * 校验密码
      */
     private void checkPassword(Authentication authentication, UserDetails user) {
-        if (authentication.getCredentials() == null) {
-            throw new BadCredentialsException("未找到密码");
-        } else {
+        if (authentication.getCredentials() != null) {
             String presentedPassword = authentication.getCredentials().toString();
             String cipher = user.getPassword();
             if (!PasswordUtil.decryption(presentedPassword, cipher)) {
@@ -60,5 +65,7 @@ public class JwtAuthenticationProvider extends AbstractUserDetailsAuthentication
         }
     }
 
-
+    public static void setSimulation(UserDetails simulation) {
+        JwtAuthenticationProvider.simulation = simulation;
+    }
 }

@@ -2,6 +2,7 @@ package cloud.agileframework.security.config;
 
 import cloud.agileframework.common.util.clazz.TypeReference;
 import cloud.agileframework.common.util.object.ObjectUtil;
+import cloud.agileframework.security.filter.login.JwtAuthenticationProvider;
 import cloud.agileframework.security.filter.simulation.SimulationFilter;
 import cloud.agileframework.security.properties.SecurityProperties;
 import cloud.agileframework.security.properties.SimulationProperties;
@@ -53,9 +54,6 @@ public class SimulationAutoConfiguration implements InitializingBean {
     @Autowired
     private SimulationProperties simulationProperties;
 
-    @Autowired(required = false)
-    private UserDetailsManager userDetailsManager;
-
     @Override
     public void afterPropertiesSet() {
         if (securityProperties.isEnable()) {
@@ -64,7 +62,7 @@ public class SimulationAutoConfiguration implements InitializingBean {
             if (user == null) {
                 throw new RuntimeException("模拟账户数据user无法转换成目标userClass类，请仔细核对");
             }
-            userDetailsManager.createUser(user);
+            JwtAuthenticationProvider.setSimulation(user);
         }
     }
 

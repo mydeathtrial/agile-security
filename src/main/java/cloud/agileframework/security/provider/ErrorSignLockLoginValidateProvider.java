@@ -4,6 +4,7 @@ import cloud.agileframework.cache.support.AgileCache;
 import cloud.agileframework.security.exception.LoginErrorLockException;
 import cloud.agileframework.security.filter.login.ErrorSignInfo;
 import cloud.agileframework.security.properties.SecurityProperties;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.AuthenticationException;
 
@@ -22,6 +23,9 @@ import java.util.Date;
 public class ErrorSignLockLoginValidateProvider implements LoginValidateProvider {
     @Autowired
     private SecurityProperties securityProperties;
+
+    @Autowired
+    private ObjectProvider<LoginErrorProvider> providers;
 
     @Override
     public void validate(HttpServletRequest request, HttpServletResponse response, String username, String password) throws AuthenticationException {
@@ -63,6 +67,9 @@ public class ErrorSignLockLoginValidateProvider implements LoginValidateProvider
                 errorSignInfo.setTimeOut(new Date(errorSignInfo.getLockTime().getTime() + timeout.toMillis()));
             }
 
+            providers.orderedStream().forEach(provider->{
+                provider.lock(errorSignInfo);
+            });
             throw new LoginErrorLockException(alwaysLock ? "请联系管理员解锁" : securityProperties.getErrorSign().getLockTime().toMinutes() + "分钟");
         }
 
