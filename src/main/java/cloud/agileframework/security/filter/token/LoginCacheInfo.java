@@ -80,6 +80,8 @@ public class LoginCacheInfo implements Serializable {
             loginCacheInfo.setAuthentication(authentication);
             sessionTokens = new HashMap<>(Constant.NumberAbout.ONE);
         } else {
+            loginCacheInfo.setUsername(username);
+            loginCacheInfo.setAuthentication(authentication);
             sessionTokens = loginCacheInfo.getSessionTokens();
             parsingTimeOut(sessionTokens);
         }
@@ -101,6 +103,9 @@ public class LoginCacheInfo implements Serializable {
      * @param sessionTokens 会话令牌集合
      */
     private static void parsingTimeOut(Map<Long, TokenInfo> sessionTokens) {
+        if (sessionTokens == null) {
+            return;
+        }
         sessionTokens.values().removeIf(tokenInfo -> !tokenInfo.getEnd().after(DateUtil.getCurrentDate()));
     }
 
@@ -181,17 +186,21 @@ public class LoginCacheInfo implements Serializable {
 
         LoginCacheInfo loginCacheInfo = cache.get(username, LoginCacheInfo.class);
 
-        if (loginCacheInfo == null || loginCacheInfo.getSessionTokens().get(sessionToken) == null) {
-            throw new TokenIllegalException("身份令牌验证失败");
+        if (loginCacheInfo == null) {
+            throw new TokenIllegalException("无效身份令牌");
         }
 
         // 处理过期
         loginCacheInfo.parsingTimeOut();
 
         TokenInfo sessionInfo = loginCacheInfo.getSessionTokens().get(sessionToken);
-        if (!sessionInfo.getEnd().after(DateUtil.getCurrentDate()) || !claims.getExpiration().after(DateUtil.getCurrentDate())) {
+        if (sessionInfo == null) {
             throw new TokenIllegalException("身份令牌已过期");
         }
+        if (!claims.getExpiration().after(DateUtil.getCurrentDate())) {
+            throw new TokenIllegalException("身份令牌已过期");
+        }
+
         sessionInfo.setEnd(DateUtil.add(new Date(), securityProperties.getTokenTimeout()));
         cache.put(username, loginCacheInfo);
 

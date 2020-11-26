@@ -230,7 +230,8 @@ public class PasswordUtil {
     /**
      * 密码匹配
      *
-     * @param cipher 预想匹配的密码明文
+     * @param clear  明文
+     * @param cipher 密文
      * @return 是否匹配
      */
     public static boolean decryption(String clear, String cipher) {
