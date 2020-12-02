@@ -4,13 +4,12 @@ import cloud.agileframework.cache.support.AgileCache;
 import cloud.agileframework.cache.util.CacheUtil;
 import cloud.agileframework.security.exception.RepeatAccount;
 import cloud.agileframework.security.filter.login.CustomerUserDetails;
-import cloud.agileframework.security.filter.token.LoginCacheInfo;
+import cloud.agileframework.security.properties.LoginStrategy;
 import cloud.agileframework.security.properties.SecurityProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * @author 佟盟
@@ -25,30 +24,16 @@ public class LoginStrategyLoginValidateProvider implements LoginValidateProvider
     private SecurityProperties securityProperties;
 
     @Override
-    public void validate(HttpServletRequest request, HttpServletResponse response, String username, String password) throws AuthenticationException {
-        loginStrategyHandler(username);
-    }
-
-    /**
-     * 判断登录策略
-     *
-     * @param username 帐号
-     */
-    private void loginStrategyHandler(String username) {
-        AgileCache cache = CacheUtil.getCache(securityProperties.getTokenHeader());
-
-        LoginCacheInfo loginCacheInfo = cache.get(username, LoginCacheInfo.class);
-
-        if (loginCacheInfo == null) {
+    public void validate(Authentication authentication, UserDetails user) throws AuthenticationException {
+        if (!(user instanceof CustomerUserDetails)) {
             return;
         }
-
-        CustomerUserDetails userDetails = (CustomerUserDetails) loginCacheInfo.getAuthentication().getPrincipal();
-
-        if (userDetails.getLoginStrategy() != null && !loginCacheInfo.getSessionTokens().isEmpty()) {
-            switch (userDetails.getLoginStrategy()) {
+        final LoginStrategy loginStrategy = ((CustomerUserDetails) user).getLoginStrategy();
+        if (loginStrategy != null) {
+            switch (loginStrategy) {
                 case SINGLETON_REPLACE:
-                    cache.evict(username);
+                    AgileCache cache = CacheUtil.getCache(securityProperties.getTokenHeader());
+                    cache.evict(user.getUsername());
                     break;
                 case MORE:
                     break;

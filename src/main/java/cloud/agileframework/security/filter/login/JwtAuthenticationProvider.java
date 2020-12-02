@@ -1,18 +1,21 @@
 package cloud.agileframework.security.filter.login;
 
-import cloud.agileframework.security.util.PasswordUtil;
-import org.springframework.security.authentication.BadCredentialsException;
+import cloud.agileframework.security.provider.LoginValidateProvider;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author 佟盟 on 2017/1/13
  */
 public class JwtAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
     private CustomerUserDetailsService userDetailsService;
+    private ObjectProvider<LoginValidateProvider> loginValidateProviders;
     /**
      * 虚拟账户
      */
@@ -22,13 +25,20 @@ public class JwtAuthenticationProvider extends AbstractUserDetailsAuthentication
         this.userDetailsService = userDetailsService;
     }
 
+    public void setLoginValidateProviders(ObjectProvider<LoginValidateProvider> loginValidateProviders) {
+        this.loginValidateProviders = loginValidateProviders;
+    }
+
     @Override
     protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
         //验证账号合法性
         userDetailsService.validate(userDetails);
 
-        //验证密码
-        checkPassword(authentication, userDetails);
+        // 额外验证
+        List<LoginValidateProvider> providers = loginValidateProviders.orderedStream().collect(Collectors.toList());
+        for (LoginValidateProvider provider : providers) {
+            provider.validate(authentication, userDetails);
+        }
     }
 
     /**
@@ -36,12 +46,12 @@ public class JwtAuthenticationProvider extends AbstractUserDetailsAuthentication
      *
      * @param username       帐号
      * @param authentication 权限
-     * @return
-     * @throws AuthenticationException
+     * @return 账户信息
+     * @throws AuthenticationException 账户异常
      */
     @Override
     protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-        if(username!=null && simulation!=null && username.equals(simulation.getUsername())){
+        if (username != null && simulation != null && username.equals(simulation.getUsername())) {
             return simulation;
         }
         return userDetailsService.loadUserByUsername(username);
@@ -50,19 +60,6 @@ public class JwtAuthenticationProvider extends AbstractUserDetailsAuthentication
     @Override
     public boolean supports(Class<?> authentication) {
         return UsernamePasswordAuthenticationToken.class.equals(authentication);
-    }
-
-    /**
-     * 校验密码
-     */
-    private void checkPassword(Authentication authentication, UserDetails user) {
-        if (authentication.getCredentials() != null) {
-            String presentedPassword = authentication.getCredentials().toString();
-            String cipher = user.getPassword();
-            if (!PasswordUtil.decryption(presentedPassword, cipher)) {
-                throw new BadCredentialsException(String.format("密码匹配失败,[输入项：%s][目标值：%s]", presentedPassword, cipher));
-            }
-        }
     }
 
     public static void setSimulation(UserDetails simulation) {

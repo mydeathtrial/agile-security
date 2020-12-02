@@ -8,6 +8,7 @@ import cloud.agileframework.security.provider.ErrorSignLockLoginValidateProvider
 import cloud.agileframework.security.provider.KaptchaLoginValidateProvider;
 import cloud.agileframework.security.provider.LoginStrategyLoginValidateProvider;
 import cloud.agileframework.security.provider.LoginValidateProvider;
+import cloud.agileframework.security.provider.PasswordLoginValidateProvider;
 import cloud.agileframework.security.provider.PasswordProvider;
 import cloud.agileframework.security.provider.SecurityResultProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -70,6 +71,15 @@ public class SecurityAboutConfiguration {
     @Order(1)
     public ErrorSignLockLoginValidateProvider errorSignLockLoginValidateProvider() {
         return new ErrorSignLockLoginValidateProvider();
+    }
+
+    /**
+     * 密码验证器
+     */
+    @Bean
+    @Order(1)
+    public PasswordLoginValidateProvider passwordLoginValidateProvider() {
+        return new PasswordLoginValidateProvider();
     }
 
     @Bean

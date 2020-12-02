@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 /**
  * @author 佟盟 on 2017/1/13
  */
-public class LoginFilter extends AbstractAuthenticationProcessingFilter implements InitializingBean,SingleSignOnProvider {
+public class LoginFilter extends AbstractAuthenticationProcessingFilter implements InitializingBean, SingleSignOnProvider {
 
     private final JwtAuthenticationProvider loginStrategyProvider = new JwtAuthenticationProvider();
 
@@ -65,6 +65,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter implemen
         this.setAuthenticationManager(providerManager);
 
         loginStrategyProvider.setUserDetailsService(userDetailsService);
+        loginStrategyProvider.setLoginValidateProviders(loginValidateProviders);
         setRememberMeServices(rememberMeServices);
     }
 

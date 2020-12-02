@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 public interface SingleSignOnProvider {
     /**
      * 登录
+     *
      * @param username 帐号
      * @return
      */

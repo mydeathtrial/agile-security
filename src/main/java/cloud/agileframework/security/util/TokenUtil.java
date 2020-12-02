@@ -1,6 +1,8 @@
 package cloud.agileframework.security.util;
 
 import cloud.agileframework.common.util.date.DateUtil;
+import cloud.agileframework.common.util.rsa.RSAUtil;
+import cloud.agileframework.security.filter.token.LoginCacheInfo;
 import cloud.agileframework.security.properties.SecurityProperties;
 import cloud.agileframework.security.properties.TransmissionMode;
 import cloud.agileframework.spring.util.BeanUtil;
@@ -14,7 +16,10 @@ import org.springframework.util.ObjectUtils;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +41,43 @@ public class TokenUtil {
 
     private static final SecurityProperties securityProperties = BeanUtil.getBean(SecurityProperties.class);
 
+    private static PrivateKey privateKey;
+
+    private static PublicKey publicKey;
+    /**
+     * token令牌加解密的密钥对
+     */
+    private static final String KEY_PAIR_CACHE_KEY = "$AGILE_SECURITY_RSA_KEY_PAIR$";
+    private static final String RSA = "RSA";
+    private static final int KEY_SIZE = 2048;
+
+    @SneakyThrows
+    private static void init() {
+        String text = LoginCacheInfo.getCache().get(KEY_PAIR_CACHE_KEY, String.class);
+        KeyPair keyPair = RSAUtil.toKeyPair(text);
+        if (keyPair == null) {
+            KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(RSA);
+            keyPairGen.initialize(KEY_SIZE);
+            keyPair = keyPairGen.generateKeyPair();
+            LoginCacheInfo.getCache().put(KEY_PAIR_CACHE_KEY, RSAUtil.toString(keyPair));
+        }
+        privateKey = keyPair.getPrivate();
+        publicKey = keyPair.getPublic();
+    }
+
+    public static PrivateKey getPrivateKey() {
+        if (privateKey == null) {
+            init();
+        }
+        return privateKey;
+    }
+
+    public static PublicKey getPublicKey() {
+        if (publicKey == null) {
+            init();
+        }
+        return publicKey;
+    }
 
     /**
      * 根据 TokenDetail 生成 Token
@@ -49,6 +91,7 @@ public class TokenUtil {
         return generateToken(claims, timeout);
     }
 
+
     public static String generateToken(Map<String, Object> claims, Date timeout) {
         return Jwts.builder()
                 .setIssuer("agile")
@@ -59,8 +102,9 @@ public class TokenUtil {
                 .setId(Long.toString(IdUtil.generatorId()))
                 .setClaims(claims)
                 .setExpiration(timeout)
-                .signWith(SignatureAlgorithm.HS512, securityProperties.getTokenSecret().getBytes(StandardCharsets.UTF_8))
+                .signWith(SignatureAlgorithm.RS512, getPrivateKey())
                 .compact();
+
     }
 
     /**
@@ -92,7 +136,7 @@ public class TokenUtil {
     public static Claims getClaimsFromToken(String token) {
         try {
             return Jwts.parser()
-                    .setSigningKey(securityProperties.getTokenSecret().getBytes(StandardCharsets.UTF_8))
+                    .setSigningKey(getPublicKey())
                     .parseClaimsJws(token)
                     .getBody();
         } catch (Exception e) {

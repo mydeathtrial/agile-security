@@ -67,7 +67,7 @@ public class ErrorSignLockLoginValidateProvider implements LoginValidateProvider
                 errorSignInfo.setTimeOut(new Date(errorSignInfo.getLockTime().getTime() + timeout.toMillis()));
             }
 
-            providers.orderedStream().forEach(provider->{
+            providers.orderedStream().forEach(provider -> {
                 provider.lock(errorSignInfo);
             });
             throw new LoginErrorLockException(alwaysLock ? "请联系管理员解锁" : securityProperties.getErrorSign().getLockTime().toMinutes() + "分钟");

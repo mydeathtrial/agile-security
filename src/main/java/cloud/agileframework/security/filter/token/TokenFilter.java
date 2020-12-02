@@ -68,7 +68,7 @@ public class TokenFilter extends OncePerRequestFilter {
             final Authentication currentAuthentication = currentLoginInfo.getLoginCacheInfo().getAuthentication();
 
             //请求信息中传递账户信息，用于后续过滤器使用
-            SecurityUtil.setCurrentUser(request,currentAuthentication);
+            SecurityUtil.setCurrentUser(request, currentAuthentication);
 
             SecurityContextHolder.getContext().setAuthentication(currentAuthentication);
 

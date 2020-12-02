@@ -40,10 +40,6 @@ public class SecurityProperties implements Serializable, InitializingBean {
      */
     private String verificationCode = "verification";
     /**
-     * token密钥
-     */
-    private String tokenSecret = "23617641641";
-    /**
      * token超时时间
      */
     private Duration tokenTimeout = Duration.ofMinutes(30);
