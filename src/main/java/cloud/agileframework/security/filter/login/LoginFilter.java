@@ -77,7 +77,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter implemen
             return authentication;
         }
 
-        request = RequestWrapper.of(request);
+        request = RequestWrapper.extract(request);
         // 获取用户名密码
         Map<String, Object> params = ((RequestWrapper) request).getInParam();
         String sourceUsername = ParamUtil.getInParam(params, securityProperties.getLoginUsername(), String.class);
