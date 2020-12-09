@@ -39,8 +39,7 @@ public class KaptchaLoginValidateProvider implements LoginValidateProvider {
     public void validate(HttpServletRequest request, HttpServletResponse response, String username, String password) throws AuthenticationException {
         request = RequestWrapper.extract(request);
         //获取用户名密码
-        Map<String, Object> params = ((RequestWrapper) request).getInParam();
-        String validateCode = ParamUtil.getInParam(params, securityProperties.getVerificationCode(), String.class);
+        String validateCode = ((RequestWrapper) request).getInParam(securityProperties.getVerificationCode(), String.class);
         if (validateCode == null) {
             throw new VerificationCodeNon();
         }
