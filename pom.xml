@@ -4,10 +4,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>Agile认证组件</name>
+    <name>agile-security</name>
     <groupId>cloud.agileframework</groupId>
     <artifactId>agile-security</artifactId>
-    <version>2.0.8.4</version>
+    <version>2.0.9</version>
     <description>print log for request</description>
     <url>https://github.com/mydeathtrial/agile-security</url>
 
@@ -82,12 +82,17 @@
         <dependency>
             <groupId>cloud.agileframework</groupId>
             <artifactId>spring-boot-starter-kaptcha</artifactId>
-            <version>2.0.8.3</version>
+            <version>2.0.9</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>cloud.agileframework</groupId>
+            <artifactId>spring-util</artifactId>
+            <version>2.0.9</version>
         </dependency>
         <!--JWT-->
         <dependency>
