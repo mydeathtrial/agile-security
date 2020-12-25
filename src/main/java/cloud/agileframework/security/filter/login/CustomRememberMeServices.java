@@ -69,7 +69,7 @@ public class CustomRememberMeServices implements RememberMeServices, Initializin
                 DateUtil.add(new Date(), securityProperties.getTokenTimeout()));
 
         //放入缓存
-        cache.put(username, loginCacheInfo);
+        cache.put(LoginCacheInfo.LOGIN_USER_PREFIX + username, loginCacheInfo);
 
         //存储登录信息
         securityUserDetailsService.loadLoginInfo(userDetails, ServletUtil.getRequestIP(request), Long.toString(sessionToken));

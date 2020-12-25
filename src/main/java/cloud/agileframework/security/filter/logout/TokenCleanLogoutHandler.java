@@ -81,7 +81,11 @@ public class TokenCleanLogoutHandler implements LogoutHandler {
      * 清空cookies
      */
     private void cleanCookie(HttpServletRequest request, HttpServletResponse httpServletResponse) {
-        Optional<Cookie> cookieOptional = Arrays.stream(request.getCookies())
+        final Cookie[] cookies = request.getCookies();
+        if (cookies == null || cookies.length == 0) {
+            return;
+        }
+        Optional<Cookie> cookieOptional = Arrays.stream(cookies)
                 .filter(cookie -> cookie.getName().equalsIgnoreCase(securityProperties.getTokenHeader()))
                 .findFirst();
         if (!cookieOptional.isPresent()) {

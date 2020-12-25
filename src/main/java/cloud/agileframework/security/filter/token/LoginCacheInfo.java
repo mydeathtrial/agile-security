@@ -1,5 +1,6 @@
 package cloud.agileframework.security.filter.token;
 
+import cloud.agileframework.cache.support.AgileCache;
 import cloud.agileframework.cache.util.CacheUtil;
 import cloud.agileframework.common.constant.Constant;
 import cloud.agileframework.common.util.date.DateUtil;
@@ -14,7 +15,6 @@ import cloud.agileframework.spring.util.IdUtil;
 import io.jsonwebtoken.Claims;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.cache.Cache;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -44,10 +44,10 @@ public class LoginCacheInfo implements Serializable {
     private Authentication authentication;
     private Map<Long, TokenInfo> sessionTokens = new HashMap<>();
     private static SecurityProperties securityProperties = BeanUtil.getBean(SecurityProperties.class);
+    public static final String LOGIN_USER_PREFIX = "LOGIN_USER_";
+    private static AgileCache cache = CacheUtil.getCache(Objects.requireNonNull(BeanUtil.getBean(SecurityProperties.class)).getTokenHeader());
 
-    private static Cache cache = CacheUtil.getCache(Objects.requireNonNull(BeanUtil.getBean(SecurityProperties.class)).getTokenHeader());
-
-    public static Cache getCache() {
+    public static AgileCache getCache() {
         return cache;
     }
 
@@ -66,7 +66,7 @@ public class LoginCacheInfo implements Serializable {
      * @return
      */
     public static LoginCacheInfo createLoginCacheInfo(String username, Authentication authentication, Long sessionToken, String token, Date start, Date end) {
-        LoginCacheInfo loginCacheInfo = cache.get(username, LoginCacheInfo.class);
+        LoginCacheInfo loginCacheInfo = cache.get(LOGIN_USER_PREFIX + username, LoginCacheInfo.class);
         Map<Long, TokenInfo> sessionTokens;
 
         TokenInfo tokenInfo = new TokenInfo();
@@ -154,7 +154,7 @@ public class LoginCacheInfo implements Serializable {
         loginCacheInfo.getSessionTokens().put(newSessionToken, tokenInfo);
 
         //同步缓存
-        cache.put(loginCacheInfo.getUsername(), loginCacheInfo);
+        cache.put(LOGIN_USER_PREFIX + loginCacheInfo.getUsername(), loginCacheInfo);
 
         //更新数据库登录信息
         CustomerUserDetailsService securityUserDetailsService = BeanUtil.getBean(CustomerUserDetailsService.class);
@@ -184,7 +184,7 @@ public class LoginCacheInfo implements Serializable {
         Long sessionToken = claims.get(TokenUtil.AUTHENTICATION_SESSION_TOKEN, Long.class);
         String username = claims.get(TokenUtil.AUTHENTICATION_USER_NAME, String.class);
 
-        LoginCacheInfo loginCacheInfo = cache.get(username, LoginCacheInfo.class);
+        LoginCacheInfo loginCacheInfo = cache.get(LOGIN_USER_PREFIX + username, LoginCacheInfo.class);
 
         if (loginCacheInfo == null) {
             throw new TokenIllegalException("无效身份令牌");
@@ -202,7 +202,7 @@ public class LoginCacheInfo implements Serializable {
         }
 
         sessionInfo.setEnd(DateUtil.add(new Date(), securityProperties.getTokenTimeout()));
-        cache.put(username, loginCacheInfo);
+        cache.put(LOGIN_USER_PREFIX + username, loginCacheInfo);
 
         return new CurrentLoginInfo(sessionToken, loginCacheInfo);
     }
@@ -224,9 +224,9 @@ public class LoginCacheInfo implements Serializable {
     public static void remove(CurrentLoginInfo currentLoginInfo) {
         currentLoginInfo.getLoginCacheInfo().getSessionTokens().remove(currentLoginInfo.getSessionToken());
         if (currentLoginInfo.getLoginCacheInfo().getSessionTokens().size() > 0) {
-            cache.put(currentLoginInfo.getLoginCacheInfo().getUsername(), currentLoginInfo.getLoginCacheInfo());
+            cache.put(LOGIN_USER_PREFIX + currentLoginInfo.getLoginCacheInfo().getUsername(), currentLoginInfo.getLoginCacheInfo());
         } else {
-            cache.evict(currentLoginInfo.getLoginCacheInfo().getUsername());
+            cache.evict(LOGIN_USER_PREFIX + currentLoginInfo.getLoginCacheInfo().getUsername());
         }
     }
 }
