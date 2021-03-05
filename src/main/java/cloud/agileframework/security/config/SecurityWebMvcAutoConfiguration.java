@@ -1,6 +1,10 @@
 package cloud.agileframework.security.config;
 
 import cloud.agileframework.security.UserDetailHandlerMethodArgumentResolver;
+import cloud.agileframework.security.event.MenuEventListener;
+import cloud.agileframework.security.util.MenuUtil;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -25,5 +29,13 @@ public class SecurityWebMvcAutoConfiguration implements WebMvcConfigurer {
     @Bean
     public UserDetailHandlerMethodArgumentResolver userDetailHandlerMethodArgumentResolver() {
         return new UserDetailHandlerMethodArgumentResolver();
+    }
+
+
+    @Bean
+    @ConditionalOnProperty(name = "enable", prefix = "agile.menu")
+    MenuEventListener menuEventListener(ApplicationEventPublisher eventPublisher) {
+        MenuUtil.setEventPublisher(eventPublisher);
+        return new MenuEventListener();
     }
 }

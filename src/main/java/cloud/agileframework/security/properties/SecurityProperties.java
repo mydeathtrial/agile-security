@@ -30,11 +30,11 @@ public class SecurityProperties implements Serializable, InitializingBean {
     /**
      * 登录地址
      */
-    private String loginUrl = "/login";
+    private String loginUrl = "/api/login";
     /**
      * 登出地址
      */
-    private String loginOutUrl = "/logout";
+    private String loginOutUrl = "/api/logout";
     /**
      * 验证码
      */

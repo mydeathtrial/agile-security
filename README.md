@@ -31,10 +31,12 @@
 
 ```markdown
 `cloud.agileframework.security.provider`包下提供多扩展点（钩子函数），如：
-`cloud.agileframework.security.provider.LoginValidateProvider`登录验证点，当产生帐号登录事件后，会触发该扩展点，且提供前端输入的帐号、密码、请求与响应等信息，扩展点通过抛出`AuthenticationException`类异常
-进行非法登录识别
-`cloud.agileframework.security.provider.PasswordProvider`密码解密点，当产生帐号登录事件后，会触发一次该扩展点，提供前端传输到服务端的密码，一般用于前后端密码约定密码加密，防止密码泄露的场景当中
-`cloud.agileframework.security.provider.SecurityResultProvider`认证结果视图处理点，当发生登录成功、失败、权限认证失败等事件时，会触发该扩展点，提供相应的如异常、帐号信息等必要信息，用于制定符合自己需要的响应报文以及结果处理
+`cloud.agileframework.security.provider.LoginValidateProvider`
+登录验证点，当产生帐号登录事件后，会触发该扩展点，且提供前端输入的帐号、密码、请求与响应等信息，扩展点通过抛出`AuthenticationException`类异常 进行非法登录识别
+`cloud.agileframework.security.provider.PasswordProvider`
+密码解密点，当产生帐号登录事件后，会触发一次该扩展点，提供前端传输到服务端的密码，一般用于前后端密码约定密码加密，防止密码泄露的场景当中
+`cloud.agileframework.security.provider.SecurityResultProvider`
+认证结果视图处理点，当发生登录成功、失败、权限认证失败等事件时，会触发该扩展点，提供相应的如异常、帐号信息等必要信息，用于制定符合自己需要的响应报文以及结果处理
 `cloud.agileframework.security.provider.LogoutProcessorProvider`退出点，当产生帐号退出事件后，会触发该扩展点，且提供退出帐号及令牌信息
 ```
 
@@ -84,7 +86,7 @@
 
 您可以从[最新稳定版本]下载包(https://github.com/mydeathtrial/agile-security/releases). 该包已上传至maven中央仓库，可在pom中直接声明引用
 
-以版本agile-security-2.0.9.jar为例。
+以版本agile-security-2.0.10.jar为例。
 
 #### 步骤 2: 添加maven依赖
 
@@ -96,11 +98,11 @@
         <url>https://repo1.maven.org/maven2/</url>
     </repository>
 </repositories>
-<!--声明依赖-->
+        <!--声明依赖-->
 <dependency>
-    <groupId>cloud.agileframework</groupId>
-    <artifactId>agile-security</artifactId>
-    <version>2.0.9</version>
+<groupId>cloud.agileframework</groupId>
+<artifactId>agile-security</artifactId>
+<version>2.0.10</version>
 </dependency>
 ```
 

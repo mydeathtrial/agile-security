@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "agile.menu.enable",
+      "type": "java.lang.Boolean",
+      "description": "菜单.",
+      "defaultValue": true
+    }
+  ]
+}

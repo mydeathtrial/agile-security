@@ -19,11 +19,11 @@ public class StrengthProperties implements Serializable {
     /**
      * 最大允许密码长度
      */
-    private int maxLength;
+    private int maxLength = 32;
     /**
      * 正则权重
      */
-    private double weightOfRegex;
+    private double weightOfRegex = 0.65d;
     /**
      * 关键字权重
      */

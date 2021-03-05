@@ -30,7 +30,8 @@ public interface LoginValidateProvider {
     /**
      * 扩展登陆验证
      *
-     * @param user 账户信息
+     * @param authentication 账户权限信息
+     * @param user           账户信息
      * @throws AuthenticationException 登陆失败异常
      */
     default void validate(Authentication authentication, UserDetails user) throws AuthenticationException {

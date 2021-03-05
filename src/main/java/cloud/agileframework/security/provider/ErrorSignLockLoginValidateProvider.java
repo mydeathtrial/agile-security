@@ -61,9 +61,9 @@ public class ErrorSignLockLoginValidateProvider implements LoginValidateProvider
             Duration timeout = securityProperties.getErrorSign().getLockTime();
             boolean alwaysLock = timeout.toMillis() <= 0;
             if (alwaysLock) {
-                cache.put(errorSignInfo.getLockObject(), ++errorCount);
+                cache.put(errorSignInfo.getLockObject(), errorCount);
             } else {
-                cache.put(errorSignInfo.getLockObject(), ++errorCount, timeout);
+                cache.put(errorSignInfo.getLockObject(), errorCount, timeout);
                 errorSignInfo.setTimeOut(new Date(errorSignInfo.getLockTime().getTime() + timeout.toMillis()));
             }
 

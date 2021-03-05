@@ -39,7 +39,7 @@ public class TokenUtil {
 
     private static final String AUTHENTICATION_CREATE_TIME = "created";
 
-    private static final SecurityProperties securityProperties = BeanUtil.getBean(SecurityProperties.class);
+    private static final SecurityProperties SECURITY_PROPERTIES = BeanUtil.getBean(SecurityProperties.class);
 
     private static PrivateKey privateKey;
 
@@ -115,19 +115,19 @@ public class TokenUtil {
      */
     @SneakyThrows
     public static void notice(HttpServletRequest request, HttpServletResponse response, String token) {
-        TransmissionMode[] modes = securityProperties.getTokenTransmissionMode();
+        TransmissionMode[] modes = SECURITY_PROPERTIES.getTokenTransmissionMode();
         for (TransmissionMode mode : modes) {
             switch (mode) {
                 case COOKIE:
-                    response.addCookie(new Cookie(securityProperties.getTokenHeader(), token));
+                    response.addCookie(new Cookie(SECURITY_PROPERTIES.getTokenHeader(), token));
                     break;
                 case HEADER:
-                    response.setHeader(securityProperties.getTokenHeader(), token);
+                    response.setHeader(SECURITY_PROPERTIES.getTokenHeader(), token);
                     break;
                 default:
             }
         }
-        request.setAttribute(securityProperties.getTokenHeader(), token);
+        request.setAttribute(SECURITY_PROPERTIES.getTokenHeader(), token);
     }
 
     /**

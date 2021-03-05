@@ -14,6 +14,7 @@ import java.util.Collection;
  * @since 1.0
  */
 public class InMemoryUserDetails implements CustomerUserDetails {
+    private long id;
     private LoginStrategy loginStrategy;
     private Collection<? extends GrantedAuthority> authorities;
     private String password;
@@ -36,6 +37,10 @@ public class InMemoryUserDetails implements CustomerUserDetails {
         inMemoryUserDetails.credentialsNonExpired = userDetails.isCredentialsNonExpired();
         inMemoryUserDetails.enabled = userDetails.isEnabled();
         return inMemoryUserDetails;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public void setLoginStrategy(LoginStrategy loginStrategy) {
@@ -68,6 +73,11 @@ public class InMemoryUserDetails implements CustomerUserDetails {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    @Override
+    public Long id() {
+        return id;
     }
 
     @Override

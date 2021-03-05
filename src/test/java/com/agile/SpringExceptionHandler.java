@@ -1,5 +1,7 @@
 package com.agile;
 
+import cloud.agileframework.common.constant.Constant;
+import cloud.agileframework.spring.util.ServletUtil;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -25,6 +27,9 @@ public class SpringExceptionHandler implements HandlerExceptionResolver {
 
     public static ModelAndView createModelAndView(Throwable e) {
         ModelAndView modelAndView = new ModelAndView();
+        //在请求中记录
+        HttpServletRequest request = ServletUtil.getCurrentRequest();
+        request.setAttribute(Constant.RequestAttributeAbout.ERROR_EXCEPTION, e);
 
         modelAndView.setView(new MappingJackson2JsonView());
         modelAndView.addObject("exception", e);

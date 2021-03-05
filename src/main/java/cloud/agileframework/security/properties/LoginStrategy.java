@@ -20,5 +20,5 @@ public enum LoginStrategy {
     /**
      * 单例-替换上一个用户
      */
-    SINGLETON_REPLACE;
+    SINGLETON_REPLACE
 }

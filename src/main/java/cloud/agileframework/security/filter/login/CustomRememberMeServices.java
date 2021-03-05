@@ -4,6 +4,7 @@ import cloud.agileframework.cache.support.AgileCache;
 import cloud.agileframework.cache.util.CacheUtil;
 import cloud.agileframework.common.util.date.DateUtil;
 import cloud.agileframework.security.filter.token.LoginCacheInfo;
+import cloud.agileframework.security.filter.token.TokenInfo;
 import cloud.agileframework.security.properties.SecurityProperties;
 import cloud.agileframework.security.util.TokenUtil;
 import cloud.agileframework.spring.util.IdUtil;
@@ -61,12 +62,13 @@ public class CustomRememberMeServices implements RememberMeServices, Initializin
         String token = TokenUtil.generateToken(username, sessionToken, DateUtil.add(new Date(), Duration.of(365, ChronoUnit.DAYS)));
 
         //创建登录信息
+        TokenInfo tokenInfo = LoginCacheInfo.createTokenInfo(token,
+                new Date(),
+                DateUtil.add(new Date(), securityProperties.getTokenTimeout()));
         LoginCacheInfo loginCacheInfo = LoginCacheInfo.createLoginCacheInfo(username,
                 successfulAuthentication,
                 sessionToken,
-                token,
-                new Date(),
-                DateUtil.add(new Date(), securityProperties.getTokenTimeout()));
+                tokenInfo);
 
         //放入缓存
         cache.put(LoginCacheInfo.LOGIN_USER_PREFIX + username, loginCacheInfo);
@@ -77,7 +79,7 @@ public class CustomRememberMeServices implements RememberMeServices, Initializin
         //令牌传递给前端
         TokenUtil.notice(request, response, token);
 
-        ((UsernamePasswordAuthenticationToken) successfulAuthentication).setDetails(token);
+        ((UsernamePasswordAuthenticationToken) successfulAuthentication).setDetails(tokenInfo);
     }
 
 

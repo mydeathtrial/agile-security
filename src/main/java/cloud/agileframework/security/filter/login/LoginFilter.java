@@ -3,7 +3,6 @@ package cloud.agileframework.security.filter.login;
 import cloud.agileframework.security.properties.SecurityProperties;
 import cloud.agileframework.security.provider.LoginValidateProvider;
 import cloud.agileframework.security.provider.PasswordProvider;
-import cloud.agileframework.spring.util.ParamUtil;
 import cloud.agileframework.spring.util.RequestWrapper;
 import cloud.agileframework.spring.util.ServletUtil;
 import org.springframework.beans.factory.InitializingBean;
@@ -24,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**

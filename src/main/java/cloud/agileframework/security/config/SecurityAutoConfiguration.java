@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 @ImportAutoConfiguration(SecurityAboutConfiguration.class)
 @EnableConfigurationProperties(value = {SecurityProperties.class, PasswordProperties.class, StrengthProperties.class, ErrorSignProperties.class})
 @EnableWebSecurity
-@ConditionalOnProperty(name = "enable", prefix = "agile.security")
+@ConditionalOnProperty(name = "enable", prefix = "agile.security", matchIfMissing = true)
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @ConditionalOnClass({AgileCacheManagerInterface.class, WebSecurityConfigurerAdapter.class, AuthenticationProvider.class})
 public class SecurityAutoConfiguration extends WebSecurityConfigurerAdapter {

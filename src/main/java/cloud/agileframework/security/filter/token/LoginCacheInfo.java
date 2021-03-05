@@ -12,6 +12,8 @@ import cloud.agileframework.security.properties.SecurityProperties;
 import cloud.agileframework.security.util.TokenUtil;
 import cloud.agileframework.spring.util.BeanUtil;
 import cloud.agileframework.spring.util.IdUtil;
+import cloud.agileframework.spring.util.ServletUtil;
+import eu.bitwalker.useragentutils.UserAgent;
 import io.jsonwebtoken.Claims;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -60,19 +62,11 @@ public class LoginCacheInfo implements Serializable {
      * @param username       账号
      * @param authentication 用户权限信息
      * @param sessionToken   本次会话令牌
-     * @param token          信息令牌
-     * @param start          开始时间
-     * @param end            结束时间
      * @return
      */
-    public static LoginCacheInfo createLoginCacheInfo(String username, Authentication authentication, Long sessionToken, String token, Date start, Date end) {
+    public static LoginCacheInfo createLoginCacheInfo(String username, Authentication authentication, Long sessionToken, TokenInfo tokenInfo) {
         LoginCacheInfo loginCacheInfo = cache.get(LOGIN_USER_PREFIX + username, LoginCacheInfo.class);
         Map<Long, TokenInfo> sessionTokens;
-
-        TokenInfo tokenInfo = new TokenInfo();
-        tokenInfo.setToken(token);
-        tokenInfo.setStart(start);
-        tokenInfo.setEnd(end);
 
         if (loginCacheInfo == null) {
             loginCacheInfo = new LoginCacheInfo();
@@ -88,6 +82,28 @@ public class LoginCacheInfo implements Serializable {
         sessionTokens.put(sessionToken, tokenInfo);
         loginCacheInfo.setSessionTokens(sessionTokens);
         return loginCacheInfo;
+    }
+
+    /**
+     * 创建token信息
+     *
+     * @param token 令牌
+     * @param start 开始时间
+     * @param end   结束时间
+     * @return token信息
+     */
+    public static TokenInfo createTokenInfo(String token, Date start, Date end) {
+        TokenInfo tokenInfo = new TokenInfo();
+        tokenInfo.setToken(token);
+        tokenInfo.setStart(start);
+        tokenInfo.setEnd(end);
+        tokenInfo.setIp(ServletUtil.getRequestIP(ServletUtil.getCurrentRequest()));
+
+        UserAgent userAgent = UserAgent.parseUserAgentString(ServletUtil.getCurrentRequest().getHeader("User-Agent"));
+        tokenInfo.setBrowser(userAgent.getBrowser());
+        tokenInfo.setBrowserVersion(userAgent.getBrowserVersion());
+        tokenInfo.setOs(userAgent.getOperatingSystem());
+        return tokenInfo;
     }
 
     /**
@@ -152,6 +168,11 @@ public class LoginCacheInfo implements Serializable {
         tokenInfo.setStart(new Date());
         tokenInfo.setEnd(DateUtil.add(new Date(), securityProperties.getTokenTimeout()));
         loginCacheInfo.getSessionTokens().put(newSessionToken, tokenInfo);
+
+        UserAgent userAgent = UserAgent.parseUserAgentString(ServletUtil.getCurrentRequest().getHeader("User-Agent"));
+        tokenInfo.setBrowser(userAgent.getBrowser());
+        tokenInfo.setBrowserVersion(userAgent.getBrowserVersion());
+        tokenInfo.setOs(userAgent.getOperatingSystem());
 
         //同步缓存
         cache.put(LOGIN_USER_PREFIX + loginCacheInfo.getUsername(), loginCacheInfo);

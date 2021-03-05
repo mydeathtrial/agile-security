@@ -12,6 +12,13 @@ import org.springframework.security.core.userdetails.UserDetails;
  */
 public interface CustomerUserDetails extends UserDetails {
     /**
+     * 主键
+     *
+     * @return 主键
+     */
+    Long id();
+
+    /**
      * 登录策略
      *
      * @return 用户登录策略

@@ -50,7 +50,7 @@ public class SecurityAboutConfiguration {
     @Bean
     @Order(3)
     @ConditionalOnClass(KaptchaLoginValidateProvider.class)
-    @ConditionalOnProperty(name = "enable", prefix = "agile.kaptcha")
+    @ConditionalOnProperty(name = "enable", prefix = "agile.kaptcha", matchIfMissing = true)
     public LoginValidateProvider kaptchaLoginValidateProvider() {
         return new KaptchaLoginValidateProvider();
     }
