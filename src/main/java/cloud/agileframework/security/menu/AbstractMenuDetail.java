@@ -2,6 +2,8 @@ package cloud.agileframework.security.menu;
 
 import cloud.agileframework.common.util.collection.TreeBase;
 
+import java.io.Serializable;
+
 /**
  * @author 佟盟
  * 日期 2020-12-29 11:40
@@ -9,7 +11,7 @@ import cloud.agileframework.common.util.collection.TreeBase;
  * @version 1.0
  * @since 1.0
  */
-public abstract class AbstractMenuDetail<I> extends TreeBase<I> {
+public abstract class AbstractMenuDetail<I extends Serializable> extends TreeBase<I> {
 
     /**
      * 描述
