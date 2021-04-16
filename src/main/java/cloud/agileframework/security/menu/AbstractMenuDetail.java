@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @version 1.0
  * @since 1.0
  */
-public abstract class AbstractMenuDetail<I extends Serializable> extends TreeBase<I> {
+public abstract class AbstractMenuDetail<I extends Serializable> extends TreeBase<I, AbstractMenuDetail<I>> {
 
     /**
      * 描述
