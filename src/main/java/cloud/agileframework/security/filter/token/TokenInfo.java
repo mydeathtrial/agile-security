@@ -23,6 +23,6 @@ public class TokenInfo implements Serializable {
     private Date end;
     private String ip;
     private Browser browser;
-    private Version browserVersion;
+    private String browserVersion;
     private OperatingSystem os;
 }

@@ -101,7 +101,7 @@ public class LoginCacheInfo implements Serializable {
 
         UserAgent userAgent = UserAgent.parseUserAgentString(ServletUtil.getCurrentRequest().getHeader("User-Agent"));
         tokenInfo.setBrowser(userAgent.getBrowser());
-        tokenInfo.setBrowserVersion(userAgent.getBrowserVersion());
+        tokenInfo.setBrowserVersion(userAgent.getBrowserVersion().getVersion());
         tokenInfo.setOs(userAgent.getOperatingSystem());
         return tokenInfo;
     }
@@ -171,7 +171,7 @@ public class LoginCacheInfo implements Serializable {
 
         UserAgent userAgent = UserAgent.parseUserAgentString(ServletUtil.getCurrentRequest().getHeader("User-Agent"));
         tokenInfo.setBrowser(userAgent.getBrowser());
-        tokenInfo.setBrowserVersion(userAgent.getBrowserVersion());
+        tokenInfo.setBrowserVersion(userAgent.getBrowserVersion().getVersion());
         tokenInfo.setOs(userAgent.getOperatingSystem());
 
         //同步缓存
