@@ -30,8 +30,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.jackson2.CoreJackson2Module;
 import org.springframework.security.web.authentication.logout.ForwardLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.jackson2.WebJackson2Module;
 
 import java.util.stream.Collectors;
 
@@ -60,7 +62,7 @@ public class SecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
                 .authorizeRequests().antMatchers(securityProperties.getExcludeUrl().toArray(new String[]{})).permitAll().anyRequest().authenticated()
                 .and().logout().logoutUrl(securityProperties.getLoginOutUrl()).deleteCookies(securityProperties.getTokenHeader()).addLogoutHandler(tokenCleanLogoutHandler()).logoutSuccessHandler(new ForwardLogoutSuccessHandler(securityProperties.getSuccessLogoutForwardUrl()))
                 .and().exceptionHandling().accessDeniedPage(securityProperties.getFailForwardUrl())
-                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).sessionFixation().none()
+                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).sessionFixation().migrateSession()
                 .and().csrf().disable().httpBasic().disable()
                 .addFilterAt(tokenFilter(), LogoutFilter.class);
 
@@ -104,5 +106,18 @@ public class SecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     JwtAuthenticationProvider jwtAuthenticationProvider() {
         return new JwtAuthenticationProvider();
+    }
+
+    /**
+     * jackson2正反序列化配置
+     */
+    @Bean
+    CoreJackson2Module coreJackson2Module() {
+        return new CoreJackson2Module();
+    }
+
+    @Bean
+    WebJackson2Module webJackson2Module() {
+        return new WebJackson2Module();
     }
 }
