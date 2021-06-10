@@ -1,6 +1,7 @@
 package cloud.agileframework.security.config;
 
 import cloud.agileframework.cache.support.AgileCacheManagerInterface;
+import cloud.agileframework.cache.support.redis.Jackson2ModuleProvider;
 import cloud.agileframework.security.controller.ForwardController;
 import cloud.agileframework.security.filter.login.JwtAuthenticationProvider;
 import cloud.agileframework.security.filter.login.LoginFilter;
@@ -11,6 +12,7 @@ import cloud.agileframework.security.properties.ErrorSignProperties;
 import cloud.agileframework.security.properties.PasswordProperties;
 import cloud.agileframework.security.properties.SecurityProperties;
 import cloud.agileframework.security.properties.StrengthProperties;
+import com.fasterxml.jackson.databind.Module;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -31,10 +33,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.jackson2.CoreJackson2Module;
+import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.security.web.authentication.logout.ForwardLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.jackson2.WebJackson2Module;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -112,12 +116,12 @@ public class SecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
      * jackson2正反序列化配置
      */
     @Bean
-    CoreJackson2Module coreJackson2Module() {
-        return new CoreJackson2Module();
-    }
-
-    @Bean
-    WebJackson2Module webJackson2Module() {
-        return new WebJackson2Module();
+    Jackson2ModuleProvider securityJackson2ModuleProvider(){
+        return new Jackson2ModuleProvider() {
+            @Override
+            public List<Module> modules() {
+                return SecurityJackson2Modules.getModules(getClass().getClassLoader());
+            }
+        };
     }
 }
