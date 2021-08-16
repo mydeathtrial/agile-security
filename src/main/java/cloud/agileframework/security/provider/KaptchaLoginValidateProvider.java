@@ -56,6 +56,8 @@ public class KaptchaLoginValidateProvider implements LoginValidateProvider {
         if (!cacheCodeToken.toString().equalsIgnoreCase(validateCode)) {
             throw new VerificationCodeException(String.format("正确值:%s;输入值:%s", cacheCodeToken, validateCode));
         }
+
+        CacheUtil.evict(codeToken);
         Cookie cookie = new Cookie(kaptchaConfigProperties.getTokenHeader(), null);
         String cookiePath = request.getContextPath() + Constant.RegularAbout.SLASH;
         cookie.setPath(cookiePath);
