@@ -94,13 +94,6 @@ public class ForwardController extends AbstractErrorController {
                 (String) request.getAttribute(TokenCleanLogoutHandler.LOGOUT_TOKEN));
     }
 
-
-    @Override
-    @Deprecated
-    public String getErrorPath() {
-        return null;
-    }
-
     private Throwable cause(Throwable throwable) {
         final Throwable cause = throwable.getCause();
         if (cause == null) {
