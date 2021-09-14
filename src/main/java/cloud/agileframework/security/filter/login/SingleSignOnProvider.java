@@ -5,7 +5,7 @@ import org.springframework.security.core.Authentication;
 /**
  * @author 佟盟
  * 日期 2020-11-16 13:38
- * 描述 TODO
+ * 描述 单点登录
  * @version 1.0
  * @since 1.0
  */

@@ -28,7 +28,7 @@ public interface LoginValidateProvider {
     }
 
     /**
-     * 扩展登陆验证
+     * 扩展登陆验证（与现有账户信息数据相关）
      *
      * @param authentication 账户权限信息
      * @param user           账户信息

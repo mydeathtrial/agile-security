@@ -27,6 +27,7 @@ import org.springframework.security.web.authentication.RememberMeServices;
  */
 public class SecurityAboutConfiguration {
     @Bean
+    @ConditionalOnMissingBean(PasswordProvider.class)
     PasswordProvider passwordProvider() {
         return ciphertext -> ciphertext;
     }
