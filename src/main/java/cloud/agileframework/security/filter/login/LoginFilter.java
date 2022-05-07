@@ -5,9 +5,12 @@ import cloud.agileframework.security.provider.LoginValidateProvider;
 import cloud.agileframework.security.provider.PasswordProvider;
 import cloud.agileframework.spring.util.RequestWrapper;
 import cloud.agileframework.spring.util.ServletUtil;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,7 +31,7 @@ import java.util.stream.Collectors;
 /**
  * @author 佟盟 on 2017/1/13
  */
-public class LoginFilter extends AbstractAuthenticationProcessingFilter implements InitializingBean, SingleSignOnProvider {
+public class LoginFilter extends AbstractAuthenticationProcessingFilter implements InitializingBean, SingleSignOnProvider, ApplicationContextAware {
 
     private final JwtAuthenticationProvider loginStrategyProvider = new JwtAuthenticationProvider();
 
@@ -46,6 +49,8 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter implemen
 
     @Autowired
     private RememberMeServices rememberMeServices;
+    
+    private ApplicationContext applicationContext;
 
     public LoginFilter(String loginUrl) {
         super(new AntPathRequestMatcher(loginUrl));
@@ -65,6 +70,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter implemen
         loginStrategyProvider.setUserDetailsService(userDetailsService);
         loginStrategyProvider.setLoginValidateProviders(loginValidateProviders);
         setRememberMeServices(rememberMeServices);
+        setApplicationEventPublisher(applicationContext);
     }
 
     @Override
@@ -109,5 +115,10 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter implemen
                 ServletUtil.getCurrentResponse(),
                 auth);
         return auth;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

@@ -14,6 +14,7 @@ import cloud.agileframework.spring.util.BeanUtil;
 import cloud.agileframework.spring.util.IdUtil;
 import cloud.agileframework.spring.util.ServletUtil;
 import eu.bitwalker.useragentutils.UserAgent;
+import eu.bitwalker.useragentutils.Version;
 import io.jsonwebtoken.Claims;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -101,8 +102,10 @@ public class LoginCacheInfo implements Serializable {
 
         UserAgent userAgent = UserAgent.parseUserAgentString(ServletUtil.getCurrentRequest().getHeader("User-Agent"));
         tokenInfo.setBrowser(userAgent.getBrowser());
-        tokenInfo.setBrowserVersion(userAgent.getBrowserVersion().getVersion());
+        Version version = userAgent.getBrowserVersion();
+        tokenInfo.setBrowserVersion(version == null ? null : version.getVersion());
         tokenInfo.setOs(userAgent.getOperatingSystem());
+
         return tokenInfo;
     }
 

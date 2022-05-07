@@ -9,8 +9,12 @@ import cloud.agileframework.security.provider.LogoutProcessorProvider;
 import cloud.agileframework.spring.util.ParamUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.security.authentication.event.LogoutSuccessEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
@@ -23,7 +27,7 @@ import java.util.Optional;
 /**
  * @author 佟盟 on 2018/7/6
  */
-public class TokenCleanLogoutHandler implements LogoutHandler {
+public class TokenCleanLogoutHandler implements LogoutHandler, ApplicationContextAware {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     public static final String LOGOUT_USERNAME = "SPRING_SECURITY_LOGOUT_USERNAME";
     public static final String LOGOUT_TOKEN = "SPRING_SECURITY_LOGOUT_TOKEN";
@@ -33,6 +37,8 @@ public class TokenCleanLogoutHandler implements LogoutHandler {
     private CustomerUserDetailsService securityUserDetailsService;
     @Autowired
     private ObjectProvider<LogoutProcessorProvider> observers;
+    
+    private ApplicationContext applicationContext;
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
@@ -65,6 +71,9 @@ public class TokenCleanLogoutHandler implements LogoutHandler {
         //执行后钩子
         after(username, token);
 
+        //发布退出成功事件
+        applicationContext.publishEvent(new LogoutSuccessEvent(authentication));
+        
         logger.info(String.format("账号退出[username:%s][token：%s]", username, sessionToken));
     }
 
@@ -108,4 +117,8 @@ public class TokenCleanLogoutHandler implements LogoutHandler {
         });
     }
 
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
 }
