@@ -67,6 +67,7 @@ public class SecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
                 .and().logout().logoutUrl(securityProperties.getLoginOutUrl()).deleteCookies(securityProperties.getTokenHeader()).addLogoutHandler(tokenCleanLogoutHandler()).logoutSuccessHandler(new ForwardLogoutSuccessHandler(securityProperties.getSuccessLogoutForwardUrl()))
                 .and().exceptionHandling().accessDeniedPage(securityProperties.getFailForwardUrl())
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).sessionFixation().migrateSession()
+                .and().headers().frameOptions().disable()
                 .and().csrf().disable().httpBasic().disable()
                 .addFilterAt(tokenFilter(), LogoutFilter.class);
 
