@@ -33,7 +33,8 @@ import java.util.stream.Collectors;
  */
 public class LoginFilter extends AbstractAuthenticationProcessingFilter implements InitializingBean, SingleSignOnProvider, ApplicationContextAware {
 
-    private final JwtAuthenticationProvider loginStrategyProvider = new JwtAuthenticationProvider();
+    @Autowired
+    private JwtAuthenticationProvider loginStrategyProvider;
 
     @Autowired
     private CustomerUserDetailsService userDetailsService;
