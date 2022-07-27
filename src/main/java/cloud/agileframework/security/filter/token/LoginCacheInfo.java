@@ -25,11 +25,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author 佟盟
@@ -121,11 +125,18 @@ public class LoginCacheInfo implements Serializable {
      *
      * @param sessionTokens 会话令牌集合
      */
-    private static void parsingTimeOut(Map<Long, TokenInfo> sessionTokens) {
+    private static synchronized void parsingTimeOut(Map<Long, TokenInfo> sessionTokens) {
         if (sessionTokens == null) {
             return;
         }
-        sessionTokens.values().removeIf(tokenInfo -> !tokenInfo.getEnd().after(DateUtil.getCurrentDate()));
+        Collection<TokenInfo> values = sessionTokens.values();
+        Iterator<TokenInfo> it = values.iterator();
+        while (it.hasNext()) {
+            TokenInfo tokenInfo = it.next();
+            if (!tokenInfo.getEnd().after(DateUtil.getCurrentDate())) {
+                it.remove();
+            }
+        }
     }
 
     /**
