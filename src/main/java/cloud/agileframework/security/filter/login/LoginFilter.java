@@ -50,7 +50,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter implemen
 
     @Autowired
     private RememberMeServices rememberMeServices;
-    
+
     private ApplicationContext applicationContext;
 
     public LoginFilter(String loginUrl) {

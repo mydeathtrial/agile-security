@@ -2,7 +2,6 @@ package cloud.agileframework.security.filter.token;
 
 import eu.bitwalker.useragentutils.Browser;
 import eu.bitwalker.useragentutils.OperatingSystem;
-import eu.bitwalker.useragentutils.Version;
 import lombok.Data;
 
 import java.io.Serializable;

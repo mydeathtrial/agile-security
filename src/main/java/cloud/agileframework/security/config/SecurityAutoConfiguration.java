@@ -32,11 +32,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.jackson2.CoreJackson2Module;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.security.web.authentication.logout.ForwardLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
-import org.springframework.security.web.jackson2.WebJackson2Module;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -117,7 +115,7 @@ public class SecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
      * jackson2正反序列化配置
      */
     @Bean
-    Jackson2ModuleProvider securityJackson2ModuleProvider(){
+    Jackson2ModuleProvider securityJackson2ModuleProvider() {
         return new Jackson2ModuleProvider() {
             @Override
             public List<Module> modules() {

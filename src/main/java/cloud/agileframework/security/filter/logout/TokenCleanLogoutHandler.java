@@ -37,7 +37,7 @@ public class TokenCleanLogoutHandler implements LogoutHandler, ApplicationContex
     private CustomerUserDetailsService securityUserDetailsService;
     @Autowired
     private ObjectProvider<LogoutProcessorProvider> observers;
-    
+
     private ApplicationContext applicationContext;
 
     @Override
@@ -73,7 +73,7 @@ public class TokenCleanLogoutHandler implements LogoutHandler, ApplicationContex
 
         //发布退出成功事件
         applicationContext.publishEvent(new LogoutSuccessEvent(authentication));
-        
+
         logger.info(String.format("账号退出[username:%s][token：%s]", username, sessionToken));
     }
 
