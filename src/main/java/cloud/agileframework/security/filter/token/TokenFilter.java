@@ -2,15 +2,18 @@ package cloud.agileframework.security.filter.token;
 
 import cloud.agileframework.security.properties.SecurityProperties;
 import cloud.agileframework.security.properties.TokenType;
+import cloud.agileframework.security.provider.TokenValidateProvider;
 import cloud.agileframework.security.util.TokenUtil;
 import cloud.agileframework.spring.util.ParamUtil;
 import cloud.agileframework.spring.util.SecurityUtil;
 import cloud.agileframework.spring.util.ServletUtil;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -33,6 +36,8 @@ public class TokenFilter extends OncePerRequestFilter {
     private List<RequestMatcher> matches;
     @Autowired
     private SecurityProperties securityProperties;
+    @Autowired
+    private ObjectProvider<TokenValidateProvider> providers;
 
     @Override
     public void afterPropertiesSet() throws ServletException {
@@ -62,8 +67,8 @@ public class TokenFilter extends OncePerRequestFilter {
             CurrentLoginInfo currentLoginInfo = LoginCacheInfo.getCurrentLoginInfo(token);
 
             //验证当前登陆用户信息合法性
-            LoginCacheInfo.validateCacheDate(currentLoginInfo.getLoginCacheInfo());
-
+            providers.orderedStream().forEach(provider->provider.validate((UserDetails) currentLoginInfo.getLoginCacheInfo().getAuthentication().getPrincipal()));
+            
             //账户信息赋给业务层
             final Authentication currentAuthentication = currentLoginInfo.getLoginCacheInfo().getAuthentication();
 

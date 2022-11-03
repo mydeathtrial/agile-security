@@ -4,14 +4,12 @@ import cloud.agileframework.cache.support.AgileCache;
 import cloud.agileframework.security.exception.LoginErrorLockException;
 import cloud.agileframework.security.filter.login.ErrorSignInfo;
 import cloud.agileframework.security.properties.SecurityProperties;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.AuthenticationException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.Duration;
-import java.util.Date;
 
 /**
  * @author 佟盟
@@ -23,9 +21,6 @@ import java.util.Date;
 public class ErrorSignLockLoginValidateProvider implements LoginValidateProvider {
     @Autowired
     private SecurityProperties securityProperties;
-
-    @Autowired
-    private ObjectProvider<LoginErrorProvider> providers;
 
     @Override
     public void validate(HttpServletRequest request, HttpServletResponse response, String username, String password) throws AuthenticationException {
@@ -55,23 +50,16 @@ public class ErrorSignLockLoginValidateProvider implements LoginValidateProvider
         Integer errorCount = cache.get(errorSignInfo.getLockObject(), Integer.class);
 
         if (errorCount != null && errorCount >= securityProperties.getErrorSign().getMaxErrorCount()) {
-            errorSignInfo.setLockTime(new Date());
-
             //锁定过期时间
-            Duration timeout = securityProperties.getErrorSign().getLockTime();
-            boolean alwaysLock = timeout.toMillis() <= 0;
-            if (alwaysLock) {
-                cache.put(errorSignInfo.getLockObject(), errorCount);
+            Duration lockTime = securityProperties.getErrorSign().getLockTime();
+            boolean alwaysLock = lockTime.toMillis() <= 0;
+
+            long minutes = lockTime.toMinutes();
+            if (minutes == 0) {
+                throw new LoginErrorLockException(alwaysLock ? "请联系管理员解锁" : lockTime.getSeconds() + "秒");
             } else {
-                cache.put(errorSignInfo.getLockObject(), errorCount, timeout);
-                errorSignInfo.setTimeOut(new Date(errorSignInfo.getLockTime().getTime() + timeout.toMillis()));
+                throw new LoginErrorLockException(alwaysLock ? "请联系管理员解锁" : minutes + "分钟");
             }
-
-            providers.orderedStream().forEach(provider -> {
-                provider.lock(errorSignInfo);
-            });
-            throw new LoginErrorLockException(alwaysLock ? "请联系管理员解锁" : securityProperties.getErrorSign().getLockTime().toMinutes() + "分钟");
         }
-
     }
 }

@@ -33,6 +33,10 @@ public class ErrorSignProperties implements Serializable {
      */
     private Duration lockTime = Duration.ofMinutes(Constant.NumberAbout.TWO);
     /**
+     * 是否自动延时
+     */
+    private boolean autoDelay = true;
+    /**
      * 登录失败计算超时
      */
     private Duration countTimeout = Duration.ofMinutes(Constant.NumberAbout.TWO);

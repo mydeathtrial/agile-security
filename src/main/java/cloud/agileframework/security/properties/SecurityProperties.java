@@ -44,6 +44,10 @@ public class SecurityProperties implements Serializable, InitializingBean {
      */
     private Duration tokenTimeout = Duration.ofMinutes(30);
     /**
+     * token活跃时间
+     */
+    private Duration tokenActiveTimeout = Duration.ofMinutes(10);
+    /**
      * token传递header名
      */
     private String tokenHeader = "AGILE_TOKEN";

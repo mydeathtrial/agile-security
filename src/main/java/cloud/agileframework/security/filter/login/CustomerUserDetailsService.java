@@ -1,5 +1,6 @@
 package cloud.agileframework.security.filter.login;
 
+import cloud.agileframework.security.provider.TokenValidateProvider;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.UserDetailsManager;
@@ -13,7 +14,7 @@ import javax.servlet.http.HttpServletRequest;
  * @version 1.0
  * @since 1.0
  */
-public interface CustomerUserDetailsService extends UserDetailsManager {
+public interface CustomerUserDetailsService extends UserDetailsManager, TokenValidateProvider {
     /**
      * 用户身份验证
      *

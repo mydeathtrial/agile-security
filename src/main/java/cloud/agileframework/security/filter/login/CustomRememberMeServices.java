@@ -5,11 +5,14 @@ import cloud.agileframework.cache.util.CacheUtil;
 import cloud.agileframework.common.util.date.DateUtil;
 import cloud.agileframework.security.filter.token.LoginCacheInfo;
 import cloud.agileframework.security.filter.token.TokenInfo;
+import cloud.agileframework.security.properties.ErrorSignProperties;
 import cloud.agileframework.security.properties.SecurityProperties;
+import cloud.agileframework.security.provider.LoginErrorProvider;
 import cloud.agileframework.security.util.TokenUtil;
 import cloud.agileframework.spring.util.IdUtil;
 import cloud.agileframework.spring.util.ServletUtil;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,6 +37,8 @@ public class CustomRememberMeServices implements RememberMeServices, Initializin
     private SecurityProperties securityProperties;
     @Autowired
     private CustomerUserDetailsService securityUserDetailsService;
+    @Autowired
+    private ObjectProvider<LoginErrorProvider> providers;
     private AgileCache cache;
 
     @Override
@@ -89,25 +94,42 @@ public class CustomRememberMeServices implements RememberMeServices, Initializin
      * @param request 请求
      */
     private void failureCount(HttpServletRequest request) {
-        if (!securityProperties.getErrorSign().isEnable()) {
+        ErrorSignProperties errorSignProperties = securityProperties.getErrorSign();
+        if (!errorSignProperties.isEnable()) {
             return;
         }
 
-        AgileCache errorSignCache = securityProperties.getErrorSign().getCache();
+        AgileCache errorSignCache = errorSignProperties.getCache();
 
         //获取锁定标识
         ErrorSignInfo errorSignInfo = (ErrorSignInfo) request.getAttribute(ErrorSignInfo.REQUEST_ATTR);
 
         //计数过期时间
-        Duration countTimeout = securityProperties.getErrorSign().getCountTimeout();
+        Duration countTimeout = errorSignProperties.getCountTimeout();
 
         //已失败次数
         Integer errorCount = errorSignCache.get(errorSignInfo.getLockObject(), Integer.class);
-        if (errorCount == null) {
-            errorSignCache.put(errorSignInfo.getLockObject(), 1, countTimeout);
-        } else {
-            errorSignCache.put(errorSignInfo.getLockObject(), ++errorCount, countTimeout);
+
+        //锁定过期时间
+        Duration lockTime = errorSignProperties.getLockTime();
+        int maxErrorCount = errorSignProperties.getMaxErrorCount();
+        errorCount = errorCount == null ? 1 : ++errorCount;
+        if (errorCount < maxErrorCount) {
+            errorSignCache.put(errorSignInfo.getLockObject(), errorCount, countTimeout);
+        } else if (errorCount > maxErrorCount && errorSignProperties.isAutoDelay()) {
+            errorSignCache.put(errorSignInfo.getLockObject(), errorCount, lockTime);
+        } else if (errorCount == maxErrorCount) {
+            boolean alwaysLock = lockTime.toMillis() <= 0;
+            if (alwaysLock) {
+                errorSignCache.put(errorSignInfo.getLockObject(), errorCount);
+            } else {
+                errorSignCache.put(errorSignInfo.getLockObject(), errorCount, lockTime);
+                errorSignInfo.setLockTime(new Date());
+                errorSignInfo.setTimeOut(new Date(errorSignInfo.getLockTime().getTime() + lockTime.toMillis()));
+            }
+            providers.orderedStream().forEach(provider -> provider.lock(errorSignInfo));
         }
+
 
         request.removeAttribute(ErrorSignInfo.REQUEST_ATTR);
     }

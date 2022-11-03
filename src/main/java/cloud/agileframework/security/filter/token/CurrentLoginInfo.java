@@ -2,6 +2,9 @@ package cloud.agileframework.security.filter.token;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import java.util.Optional;
 
 /**
  * @author 佟盟
@@ -14,5 +17,10 @@ import lombok.Data;
 @AllArgsConstructor
 public class CurrentLoginInfo {
     private Long sessionToken;
+
     private LoginCacheInfo loginCacheInfo;
+
+    public LoginCacheInfo getLoginCacheInfo() {
+        return Optional.ofNullable(loginCacheInfo).orElseThrow(() -> new UsernameNotFoundException("Not Found Account"));
+    }
 }

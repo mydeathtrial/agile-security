@@ -6,6 +6,7 @@ import cloud.agileframework.common.constant.Constant;
 import cloud.agileframework.common.util.date.DateUtil;
 import cloud.agileframework.common.util.string.StringUtil;
 import cloud.agileframework.security.exception.NoSignInException;
+import cloud.agileframework.security.exception.TokenActiveException;
 import cloud.agileframework.security.exception.TokenIllegalException;
 import cloud.agileframework.security.filter.login.CustomerUserDetailsService;
 import cloud.agileframework.security.properties.SecurityProperties;
@@ -198,16 +199,6 @@ public class LoginCacheInfo implements Serializable {
     }
 
     /**
-     * 验证当前redis缓存数据是否合法
-     *
-     * @param loginCacheInfo 登陆信息
-     */
-    public static void validateCacheDate(LoginCacheInfo loginCacheInfo) {
-        LoginCacheInfo info = Optional.ofNullable(loginCacheInfo).orElseThrow(() -> new UsernameNotFoundException("Not Found Account"));
-        customerUserDetailsService.validate((UserDetails) info.getAuthentication().getPrincipal());
-    }
-
-    /**
      * 刷新token过期时间
      *
      * @param claims 令牌信息
@@ -232,6 +223,10 @@ public class LoginCacheInfo implements Serializable {
         }
         if (!claims.getExpiration().after(DateUtil.getCurrentDate())) {
             throw new TokenIllegalException("身份令牌已过期");
+        }
+        if (System.currentTimeMillis() - sessionInfo.getEnd().getTime() + securityProperties.getTokenTimeout().toMillis()
+                >= securityProperties.getTokenActiveTimeout().toMillis()) {
+            throw new TokenActiveException("会话超过规定的活跃时间");
         }
 
         sessionInfo.setEnd(DateUtil.add(new Date(), securityProperties.getTokenTimeout()));
